@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kiroku — Working Sample DB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#16181C; --darkred:#7A1F2B; --darkred-light:#F7E8E9;
+  --gold:#C9A227; --gold-light:#FBF3DE; --gold-ink:#8A6A0F;
+  --blue:#1F4E8C; --blue-light:#E7EEF7;
+  --green:#1E7B34; --green-light:#E6F4EA;
+  --ink:#1A1D21; --ink-soft:#5B6470; --border:#D8DBDE; --neutral-bg:#EEF0F2;
+  --bg:#E7E9EB; --card:#FFFFFF;
+  --r:3px;
+  --font-head:'Noto Sans JP',sans-serif; --font-body:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{background:var(--bg); font-family:var(--font-body); color:var(--ink); padding:22px 16px 60px; font-size:14px;}
+
+.page-head{max-width:1260px; margin:0 auto 16px;}
+.page-head .eyebrow{font-family:var(--font-head); font-size:11.5px; font-weight:700; letter-spacing:.1em; color:var(--darkred); text-transform:uppercase;}
+.page-head h1{font-family:var(--font-head); font-size:23px; font-weight:800; color:var(--black); margin-top:4px;}
+.page-head p{font-size:14px; color:var(--ink-soft); margin-top:4px; max-width:760px; line-height:1.55;}
+
+.env-bar{max-width:1260px;margin:0 auto 14px;display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:11px 15px;font-size:12.5px;color:var(--ink-soft);flex-wrap:wrap;}
+.env-bar .grp{display:flex;align-items:center;gap:8px;}
+.env-bar label{font-weight:700;color:var(--ink);font-size:12.5px;}
+.env-bar select{border:1px solid var(--border);border-radius:var(--r);padding:6px 10px;font-size:13px;font-family:var(--font-body);color:var(--ink);background:#fff;}
+.env-bar button{border:1px solid var(--darkred);background:#fff;color:var(--darkred);font-weight:700;font-size:12px;padding:6px 12px;border-radius:var(--r);cursor:pointer;}
+.env-bar button:hover{background:var(--darkred-light);}
+.env-bar .tag{background:var(--gold-light);color:var(--gold-ink);font-weight:800;font-size:11px;padding:3px 9px;border-radius:var(--r);border:1px solid #EFDFAE;margin-left:auto;}
+
+.screen{display:none; max-width:1260px; margin:0 auto;}
+.screen.active{display:block;}
+
+.app-frame{background:var(--card); border-radius:var(--r); overflow:hidden; border:1px solid var(--border); box-shadow:0 2px 6px rgba(15,23,20,.08);}
+.app-nav{background:var(--black); color:#fff; padding:13px 22px; display:flex; align-items:center; gap:24px; font-size:13.5px; font-weight:600; border-bottom:3px solid var(--gold);}
+.app-nav .brand{font-weight:800; font-family:var(--font-head); font-size:14.5px; color:#fff; letter-spacing:.02em;}
+.app-nav .tab{color:#9BA0A8; padding:4px 2px; border-bottom:2px solid transparent; cursor:pointer;}
+.app-nav .tab:hover{color:#fff;}
+.app-nav .tab.on{color:var(--gold); border-bottom-color:var(--gold);}
+.app-nav .tab.on:hover{color:var(--gold);}
+.app-nav .spacer{flex:1;}
+.app-nav .who{color:#C7CBD1; font-size:13px;}
+.readonly-pill{background:var(--gold-light); color:var(--gold-ink); font-size:11px; font-weight:800; padding:3px 10px; border-radius:var(--r); border:1px solid #EFDFAE; margin-left:10px;}
+
+.status-strip{padding:11px 22px; display:flex; align-items:center; gap:20px; border-bottom:1px solid var(--border); background:#FAFAFB;}
+.status-strip .date{font-size:13px; color:var(--ink-soft); white-space:nowrap;}
+.progress-mini{flex:1; display:flex; align-items:center; gap:9px; max-width:300px;}
+.progress-track{flex:1; height:7px; background:#E5E7EB; border-radius:2px; overflow:hidden; border:1px solid var(--border);}
+.progress-fill{height:100%; background:var(--blue);}
+.progress-mini .pct{font-size:13px; font-weight:700; color:var(--blue); white-space:nowrap;}
+.mini-stats{display:flex; gap:16px; font-size:12.5px; color:var(--ink-soft); white-space:nowrap;}
+.mini-stats b{color:var(--darkred);}
+
+.body-row{display:flex;}
+.main-col{flex:1; padding:22px; min-width:0;}
+.side-col{width:300px; flex-shrink:0; border-left:1px solid var(--border); background:#FCFCFD; display:flex; flex-direction:column; height:540px;}
+
+.side-hd{padding:15px 17px 11px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border);}
+.side-hd .lbl{font-family:var(--font-head); font-size:12.5px; font-weight:800; letter-spacing:.06em; color:var(--ink-soft); text-transform:uppercase;}
+.side-hd .count{background:var(--darkred-light); color:var(--darkred); font-size:12px; font-weight:800; padding:2px 10px; border-radius:var(--r); border:1px solid var(--darkred-light);}
+.side-list{padding:8px; overflow-y:auto; flex:1; min-height:0;}
+.queue-item{padding:10px 11px; border-radius:var(--r); margin-bottom:4px; display:flex; align-items:flex-start; gap:9px; cursor:pointer;}
+.queue-item .ball{margin-top:5px;}
+.queue-item:hover{background:#F2F4F5;}
+.ball{width:9px; height:9px; border-radius:50%; margin-top:4px; flex-shrink:0;}
+.ball.done{background:var(--blue);} .ball.pending{background:var(--gold);} .ball.flagged{background:var(--darkred);} .ball.none{background:#D8DBDE;}
+.ball-md{width:16px; height:16px; margin-top:0;}
+.active-ring{box-shadow:0 0 0 3px var(--gold);}
+.queue-item .qbody{flex:1;}
+.queue-item .qn{font-size:13.5px; font-weight:700;}
+.queue-item .qs{font-size:12px; color:var(--ink-soft); margin-top:1px;}
+.queue-item .qd{font-size:11px; font-weight:800; color:var(--darkred); white-space:nowrap;}
+.side-more{padding:11px 17px; font-size:12.5px; font-weight:700; color:var(--blue); border-top:1px solid var(--border);}
+
+.bottom-bar{border-top:1px solid var(--border); background:var(--blue-light); padding:11px 22px; display:flex; align-items:center; gap:22px; font-size:13px; font-weight:700; color:var(--blue); flex-wrap:wrap;}
+.bottom-bar .dim{color:var(--ink-soft); font-weight:500; font-size:12px;}
+
+.greet h2{font-family:var(--font-head); font-size:20px; color:var(--ink); margin-bottom:2px;}
+.greet p{font-size:13.5px; color:var(--ink-soft); margin-bottom:17px;}
+.greet-actions{display:flex; gap:8px; margin-bottom:17px;}
+.section-label{font-family:var(--font-head); font-size:11.5px; font-weight:800; letter-spacing:.06em; color:var(--ink-soft); text-transform:uppercase; margin:18px 0 10px;}
+.form-row{display:flex; gap:14px; padding:0 22px 14px; flex-wrap:wrap;}
+.form-field{flex:1; min-width:160px;}
+.form-field label{display:block; font-size:10.5px; font-weight:800; letter-spacing:.05em; color:var(--ink-soft); text-transform:uppercase; margin-bottom:5px;}
+.form-field input, .form-field select{width:100%; border:1px solid var(--border); border-radius:var(--r); padding:8px 10px; font-size:13.5px; color:var(--ink); background:#fff; font-family:var(--font-body);}
+.form-field input:focus, .form-field select:focus{outline:none; border-color:var(--darkred);}
+.form-actions{padding:6px 22px 20px; display:flex; gap:8px;}
+table.jo-table{width:100%; border-collapse:collapse; font-size:13px;}
+table.jo-table th{text-align:left; font-size:11px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-soft); padding:10px 22px; border-bottom:1px solid var(--border); background:#FAFAFB;}
+table.jo-table td{padding:10px 22px; border-bottom:1px solid #F1F3F4;}
+table.jo-table td.actions{display:flex; gap:6px; flex-wrap:wrap;}
+.cta-banner{background:var(--darkred); border-radius:var(--r); padding:17px 19px; color:#fff; margin-bottom:17px; display:flex; align-items:center; gap:15px; cursor:pointer; border:1px solid #5E1721;}
+.cta-banner .lbl{font-size:10.5px; font-weight:800; letter-spacing:.08em; color:var(--gold); text-transform:uppercase;}
+.cta-banner .txt{font-family:var(--font-head); font-weight:700; font-size:16px; margin-top:3px;}
+.cta-banner .play{width:36px;height:36px;border-radius:50%;background:#ffffff20;display:flex;align-items:center;justify-content:center;flex-shrink:0; color:#fff;}
+
+.stat-row{display:flex; gap:11px; margin-bottom:17px;}
+.stat-chip{flex:1; background:#fff; border:1px solid var(--border); border-radius:var(--r); padding:11px 13px;}
+.stat-chip .sv{font-family:var(--font-head); font-size:19px; font-weight:800;}
+.stat-chip .sl{font-size:11.5px; color:var(--ink-soft); font-weight:600; margin-top:1px;}
+.stat-chip.c-red .sv{color:var(--darkred);}
+.stat-chip.c-blue .sv{color:var(--blue);}
+.stat-chip.c-gold .sv{color:var(--gold-ink);}
+
+.card{background:#fff; border:1px solid var(--border); border-radius:var(--r); overflow:hidden; margin-bottom:15px;}
+.dual-card-row{display:flex; gap:15px; align-items:flex-start;}
+.dual-card-row .card{flex:1; min-width:0;}
+.card-hd{padding:13px 17px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:#FAFAFB;}
+.card-hd .t{font-family:var(--font-head); font-size:12.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft);}
+.done-row{padding:9px 17px; border-bottom:1px solid #F1F3F4; display:flex; align-items:flex-start; gap:9px; font-size:13px;}
+.done-row .ck{margin-top:2px;}
+.done-row:last-child{border-bottom:none;}
+.done-row .ck{color:var(--blue); font-weight:800;}
+.empty-note{padding:15px 17px; font-size:12.5px; color:var(--ink-soft); font-style:italic;}
+
+.detail-top{display:flex; align-items:center; justify-content:space-between; padding:15px 22px 0; flex-wrap:wrap; gap:10px;}
+.back-link{font-size:13px; font-weight:700; color:var(--ink-soft); cursor:pointer;}
+.task-pager{display:flex; align-items:center; gap:8px;}
+.pager-btn{border:1px solid var(--border); background:#fff; border-radius:var(--r); width:28px; height:28px; font-size:14px; cursor:pointer; color:var(--ink);}
+.pager-btn:hover:not(:disabled){background:var(--darkred-light); border-color:var(--darkred);}
+.pager-btn:disabled{opacity:.3; cursor:not-allowed;}
+.pager-lbl{font-size:12px; color:var(--ink-soft); font-weight:700; white-space:nowrap;}
+.task-hero{background:var(--darkred-light); border-radius:var(--r); padding:15px 17px; display:flex; align-items:center; gap:13px; margin-bottom:17px; border:1px solid #EAD0D3;}
+.task-hero .av{width:40px;height:40px;border-radius:50%;background:var(--darkred);color:#fff;font-family:var(--font-head);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.task-hero .n{font-family:var(--font-head); font-weight:700; font-size:15px;}
+.task-hero .s{font-size:12.5px; color:var(--darkred);}
+.task-title{font-family:var(--font-head); font-size:21px; font-weight:700; margin-bottom:13px;}
+.meta-row{display:flex; gap:28px; padding:13px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:15px; font-size:13.5px; flex-wrap:wrap;}
+.meta-row .m-lbl{font-size:10.5px; font-weight:800; letter-spacing:.05em; color:var(--ink-soft); text-transform:uppercase; display:block; margin-bottom:3px;}
+.meta-row .overdue{color:var(--darkred); font-weight:700;}
+.due-badge{font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:var(--r); white-space:nowrap; border:1px solid transparent;}
+.due-badge.overdue{background:var(--darkred-light); color:var(--darkred); border-color:#EAD0D3;}
+.due-badge.upcoming{background:var(--neutral-bg); color:var(--ink-soft); border-color:var(--border);}
+.due-badge.pending{background:var(--gold-light); color:var(--gold-ink); border-color:#EFDFAE;}
+.due-badge.done{background:var(--blue-light); color:var(--blue); border-color:#CFDDEE;}
+
+.action-label{font-size:11.5px; font-weight:800; letter-spacing:.06em; color:var(--ink-soft); text-transform:uppercase; margin-bottom:9px;}
+.action-row{display:flex; gap:8px; margin-bottom:19px; flex-wrap:wrap;}
+.act-btn{display:inline-flex; align-items:center; gap:6px; background:#fff; border:1.5px solid var(--border); border-radius:var(--r); padding:8px 13px; font-family:var(--font-body); font-weight:700; font-size:12.5px; color:var(--ink); cursor:pointer;}
+.newjo-btn{margin:11px 13px 8px; width:calc(100% - 26px); background:var(--darkred); color:#fff; border:none; border-radius:var(--r); padding:9px 0; font-weight:700; font-size:13px; cursor:pointer; font-family:var(--font-body);}
+.newjo-btn:hover{background:#631a24;}
+.act-btn .ico{font-size:14px; line-height:1;}
+.act-btn:hover{background:#FAFAFB;}
+.act-btn.locked{opacity:.45; cursor:not-allowed;}
+.act-btn.locked:hover{background:#fff;}
+.act-btn.logged-today{opacity:.6; cursor:default; border-color:var(--blue); color:var(--blue);}
+.act-btn.logged-today:hover{background:#fff;}
+.act-btn.primary{background:var(--darkred); border-color:var(--darkred); color:#fff;}
+.act-btn.primary:hover{background:#631a24;}
+.act-btn.primary.locked{background:#fff; color:var(--ink-soft); border-color:var(--border);}
+.act-btn.small{padding:5px 10px; font-size:11.5px;}
+.act-btn.danger{border-color:var(--darkred); color:var(--darkred);}
+
+.jo-nametag{line-height:1.4;}
+.jo-nametag .jnt-jo{font-size:13.5px;font-weight:700;}
+.jo-nametag .jnt-org{font-size:11px;color:var(--ink-soft);}
+.jo-nametag .jnt-task{font-size:12px;font-weight:600;color:var(--ink);}
+.jo-nametag.on-dark .jnt-jo{color:#fff;}
+.jo-nametag.on-dark .jnt-org{color:#E8C9CC;}
+.jo-nametag.on-dark .jnt-task{color:#fff;}
+.jnt-title{font-size:13.5px;font-weight:700;}
+.jnt-jo2{font-size:12px;color:var(--ink-soft);font-weight:600;margin-top:2px;}
+.track-badge{display:inline-block;background:var(--neutral-bg);color:var(--ink-soft);font-size:10px;font-weight:800;padding:2px 7px;border-radius:var(--r);margin-left:7px;text-transform:uppercase;letter-spacing:.02em;vertical-align:middle;}
+
+.badge-followup{display:inline-block;background:var(--gold-light);color:var(--gold-ink);border:1px solid #EFDFAE;font-size:11px;font-weight:800;padding:3px 9px;border-radius:var(--r);white-space:nowrap;}
+.badge-upload{display:inline-block;background:var(--gold-light);color:var(--gold-ink);border:1px solid #EFDFAE;font-size:11px;font-weight:800;padding:3px 9px;border-radius:var(--r);white-space:nowrap;}
+.badge-done{display:inline-block;background:var(--blue-light);color:var(--blue);border:1px solid #CFDDEE;font-size:11px;font-weight:800;padding:3px 9px;border-radius:var(--r);white-space:nowrap;}
+.ci-badges{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+
+.save-btn{border:1px solid var(--border);background:#fff;border-radius:var(--r);width:32px;height:32px;font-size:15px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;}
+.save-btn:hover{background:var(--gold-light);}
+
+.toast{position:fixed;bottom:20px;right:20px;background:var(--black);color:var(--gold);padding:10px 18px;border-radius:var(--r);font-size:13px;font-weight:700;opacity:0;transform:translateY(8px);transition:opacity .25s, transform .25s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateY(0);}
+
+.gate-ring-wrap{display:flex;align-items:center;gap:11px;padding:15px 17px;border-bottom:1px solid var(--border); flex-shrink:0;}
+.gate-ring-wrap .save-btn{margin-left:auto;}
+.gate-list-scroll{flex:1; overflow-y:auto; min-height:0;}
+.gate-ring{width:46px;height:46px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.gate-ring .hole{width:32px;height:32px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--ink);}
+.gate-row{display:flex; align-items:center; gap:10px; padding:10px 17px; border-bottom:1px solid #F1F3F4; cursor:pointer;}
+.gate-row:hover{background:#FAFAFB;}
+.gate-row.current{background:var(--gold-light);}
+.gate-row.locked{cursor:default;}
+.gate-row.locked:hover{background:none;}
+.gate-row.locked .gn{color:var(--ink-soft);}
+.gate-row .gn{font-size:12.5px; font-weight:600; flex:1;}
+.gate-row .ball{cursor:pointer;}
+.gate-row .ball.locked{opacity:.4; cursor:not-allowed;}
+.gate-row .go{font-size:11px; color:var(--ink-soft); margin-right:6px;}
+.lock-ico{font-size:10px; opacity:.6;}
+
+.tri{display:flex; height:540px;}
+.tri-col{border-right:1px solid var(--border); display:flex; flex-direction:column; height:100%;}
+.tri-col:last-child{border-right:none;}
+.col-workers{width:300px; flex-shrink:0;}
+.col-tracks{width:220px; flex-shrink:0;}
+.col-checklist{flex:1; min-width:0;}
+.tri-hd{padding:13px 15px; font-family:var(--font-head); font-size:12px; font-weight:800; letter-spacing:.06em; color:var(--ink-soft); text-transform:uppercase; border-bottom:1px solid var(--border); background:#FAFAFB; flex-shrink:0;}
+.tri-body{flex:1; overflow-y:auto; min-height:0;}
+.search-input{display:block; width:calc(100% - 26px); margin:11px 13px; padding:8px 11px; border:1px solid var(--border); border-radius:var(--r); font-size:13px; color:var(--ink); background:#fff; font-family:var(--font-body);}
+.search-input:focus{outline:none; border-color:var(--darkred);}
+.w-row{padding:10px 15px; cursor:pointer; border-bottom:1px solid #F7F8F9;}
+.w-row.sel{background:var(--black);}
+.w-top{display:flex; align-items:center; gap:10px;}
+.w-row .wav{width:28px;height:28px;border-radius:50%;background:var(--neutral-bg);color:var(--ink);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.w-row.sel .wav{background:#ffffff20; color:#fff;}
+.w-row .wn{font-size:13px;font-weight:700;flex:1;cursor:pointer;text-decoration:underline;text-decoration-color:transparent;}
+.w-row .wn:hover{text-decoration-color:currentColor;}
+.w-row.sel .wn{color:#fff;}
+.w-row .wt{font-size:11px; color:var(--ink-soft); margin-left:38px;}
+.w-row.sel .wt{color:#C7CBD1;}
+.w-balls{display:flex; gap:7px; margin-top:8px; margin-left:38px;}
+.t-row{padding:11px 15px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #F5F6F7; cursor:pointer;}
+.t-row.sel{background:var(--darkred-light);}
+.t-row .tname{flex:1; font-size:13px; font-weight:600;}
+.t-row .tball{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.check-hd{padding:15px 17px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:13px; background:#FAFAFB;}
+.check-hd .cav{width:36px;height:36px;border-radius:50%;background:var(--darkred);color:#fff;font-family:var(--font-head);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.check-hd .cn{font-family:var(--font-head); font-weight:700; font-size:15px;}
+.check-hd .cs{font-size:12px; color:var(--ink-soft);}
+.check-hd .cring{margin-left:auto; display:flex; align-items:center; gap:9px;}
+.check-item{padding:12px 17px; display:flex; align-items:flex-start; gap:11px; border-bottom:1px solid #F5F6F7; cursor:pointer;}
+.check-item .cbx{margin-top:2px;}
+.ci-body{flex:1; min-width:0;}
+.check-item:hover{background:#FAFAFB;}
+.check-item.locked{cursor:default;}
+.check-item.locked:hover{background:none;}
+.cbx{width:19px;height:19px;border-radius:var(--r);flex-shrink:0;cursor:pointer;}
+.cbx.done{background:var(--blue); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px;}
+.cbx.open{border:2px solid #D7DEE0;}
+.cbx.locked{opacity:.4;cursor:not-allowed;}
+.check-item .ct{font-size:13.5px; font-weight:500; flex:1;}
+
+.scope-tag{display:inline-block; background:var(--black); color:var(--gold); font-size:11px; font-weight:800; letter-spacing:.05em; padding:3px 10px; border-radius:var(--r); text-transform:uppercase; margin:13px 22px 0;}
+
+.wmeta{flex:1; min-width:0;}
+.wrecv{display:block; font-size:10.5px; color:var(--ink-soft); margin-top:3px; font-weight:400;}
+.w-row.sel .wrecv{color:#C7CBD1;}
+.wrecv b{font-weight:700;}
+.crecv{font-size:11px; color:var(--ink-soft); margin-top:3px; font-weight:400;}
+.hrecv{font-size:11.5px; color:var(--ink-soft); margin-top:4px; font-weight:400;}
+
+/* CEO page */
+.col-kumiai{width:280px; flex-shrink:0;}
+.col-companies{flex:1; min-width:0;}
+.kumiai-row{padding:11px 15px;cursor:pointer;border-bottom:1px solid #F7F8F9;display:flex;align-items:center;gap:10px;}
+.kumiai-row:hover{background:#F7F8F9;}
+.kumiai-row.sel{background:var(--black);}
+.kumiai-row .kdot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.kumiai-row .kbody{flex:1;}
+.kumiai-row .kn{font-size:13px;font-weight:700;}
+.kumiai-row.sel .kn{color:#fff;}
+.kumiai-row .ks{font-size:11px;color:var(--ink-soft); margin-top:1px;}
+.kumiai-row.sel .ks{color:#C7CBD1;}
+.company-row{padding:18px;border-bottom:1px solid #F5F6F7;cursor:pointer;}
+.company-row:hover{background:#FAFAFB;}
+.company-row.sel{background:var(--gold-light);}
+.company-row .chead{display:flex;align-items:baseline;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+.company-row .cname{font-size:15px;font-weight:800;}
+.company-row .ctag{font-size:11.5px;color:var(--ink-soft);}
+.company-row .cjocount{font-size:11.5px;color:var(--blue);font-weight:700;margin-left:auto;}
+.track-summary-grid{display:flex;gap:28px;overflow-x:auto;padding-bottom:4px;}
+.tsc{width:82px;text-align:center;}
+.tsc .tscball{width:56px;height:56px;border-radius:50%;margin:0 auto 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:var(--font-head);box-shadow:0 2px 7px rgba(0,0,0,.18);}
+.tsc .tscball.active-ring{box-shadow:0 2px 7px rgba(0,0,0,.18), 0 0 0 4px var(--gold);}
+.tsc .tscball .tsc-num{font-size:16px;font-weight:800;line-height:1;}
+.tsc .tscball .tsc-of{font-size:8px;font-weight:700;line-height:1;margin-top:2px;opacity:.9;}
+.tsc .tsclabel{font-size:11.5px;color:var(--ink-soft);font-weight:800;text-transform:uppercase;letter-spacing:.03em;}
+.col-jolist{width:0; overflow:hidden; transition:width .3s ease;}
+.col-jolist.open{width:340px;}
+.jo3-row{padding:14px 15px; border-bottom:1px solid #F5F6F7;}
+.jo3-title{font-size:13px; font-weight:700; margin-bottom:10px; white-space:nowrap;}
+.jo3-balls{display:flex; gap:14px; flex-wrap:wrap;}
+.jo3-tsc{width:56px; text-align:center;}
+.jo3-ball{width:44px;height:44px;border-radius:50%;margin:0 auto 5px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:var(--font-head);box-shadow:0 2px 5px rgba(0,0,0,.15);}
+.jo3-ball .tsc-num{font-size:13px;font-weight:800;line-height:1;}
+.jo3-ball .tsc-of{font-size:7px;font-weight:700;line-height:1;margin-top:1px;}
+.jo3-ball.active-ring{box-shadow:0 2px 5px rgba(0,0,0,.15), 0 0 0 3px var(--gold);}
+.jo3-lbl{font-size:9.5px;color:var(--ink-soft);font-weight:800;text-transform:uppercase;}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div class="eyebrow">Kiroku · Working Sample Database</div>
+  <h1 id="headline">5 users · 3-track workflow · sample trial build</h1>
+  <p>This single file carries its own database (saved in this browser's storage). Each Doc Officer only edits the specific tasks assigned to them; the CEO and the All Due Gates page are view-only. Pass this file to another computer and it runs standalone, no install required.</p>
+</div>
+
+<div class="env-bar">
+  <div class="grp"><label>Logged in as</label><select id="userSwitch" onchange="onUserChange(this.value)"></select></div>
+  <div class="grp"><button onclick="resetSampleData()">↺ Reset sample data</button></div>
+  <span class="tag" id="dbTag"></span>
+  <span class="tag" id="logTag"></span>
+</div>
+
+<!-- SCREEN 1: My Tasks (Template A) -->
+<div id="s1" class="screen active">
+  <div class="app-frame" id="s1-frame"></div>
+</div>
+
+<!-- SCREEN 2: My Due Gates (Template B, filtered) -->
+<div id="s2" class="screen">
+  <div class="app-frame" id="s2-frame"></div>
+</div>
+
+<!-- SCREEN 3: All Due Gates (Template B, unfiltered, always read-only) -->
+<div id="s3" class="screen">
+  <div class="app-frame" id="s3-frame"></div>
+</div>
+
+<!-- SCREEN 4: CEO Page (Template B, summarized, with sliding B3 Active Job Orders panel) -->
+<div id="s4" class="screen">
+  <div class="app-frame" id="s4-frame"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const TODAY = new Date('2026-07-31T00:00:00');
+const STORAGE_KEY = 'kiroku_sample_db_v2';
+
+/* ---------- Data source ----------
+   Paste a Google Sheet ID below (or open the page as index.html?sheet=<ID>).
+   The sheet must be shared "Anyone with the link: Viewer" and have tabs named
+   Users, Kumiai, Companies, JobOrders, Tasks, Activity (see Kiroku_Sample_Sheet.xlsx).
+   Blank = read the bundled CSVs in ./data instead. */
+const SHEET_ID = '1OcjPALavuFbnMdhoTTRtqppKyK94CIDCWord2Gqi6OA';
+const SHEET_TABS = ['Users','Kumiai','Companies','JobOrders','Tasks','Activity'];
+let SOURCE_LABEL = '';
+const SEV = {flagged:3, pending:2, none:1, done:0};
+const ACTION_META = {followup:{icon:'🔁',label:'Follow Up'}, message:{icon:'✉️',label:'Send Message'}, note:{icon:'📝',label:'Log Note'}, upload:{icon:'📎',label:'Upload Document'}};
+
+// TASKS_CONFIG is the single source of truth for tracks + tasks: each task carries
+// its name, sequence order, deadline offset (signed days from the Job Order's Target
+// Deployment Date — negative = before, positive = after), and assigned editor.
+// TRACK_DEFS and PERMISSIONS are both derived from it below.
+const TASKS_CONFIG = {
+  TIO: [
+    {name:'Fill Up', order:1, offset:-60, editor:'u2'},
+    {name:'Signing', order:2, offset:-55, editor:'u2'},
+    {name:'DHL Sent', order:3, offset:-50, editor:'u2'},
+    {name:'DHL Received', order:4, offset:-45, editor:'u3'},
+    {name:'TIO waiting', order:5, offset:-35, editor:'u3'},
+    {name:'TIO Received with Changes', order:6, offset:-25, editor:'u3'},
+    {name:'TIO Received', order:7, offset:-20, editor:'u3'}
+  ],
+  OTIT: [
+    {name:'Fill Up', order:1, offset:-60, editor:'u1'},
+    {name:'Signing', order:2, offset:-55, editor:'u1'},
+    {name:'DHL Sent', order:3, offset:-50, editor:'u1'},
+    {name:'DHL Received', order:4, offset:-45, editor:'u3'},
+    {name:'COE Waiting', order:5, offset:-35, editor:'u3'},
+    {name:'COE Received with Changes', order:6, offset:-25, editor:'u3'},
+    {name:'COE Received', order:7, offset:-20, editor:'u3'}
+  ],
+  COE: [
+    {name:'PDOS done', order:1, offset:-15, editor:'u4'},
+    {name:'Visa done', order:2, offset:-12, editor:'u4'},
+    {name:'OWWA done', order:3, offset:-10, editor:'u4'},
+    {name:'Ticket done', order:4, offset:-7, editor:'u4'}
+  ]
+};
+const TRACK_DEFS = Object.keys(TASKS_CONFIG).map((key,i) => ({key, name:key, order:i+1}));
+
+const PERMISSIONS = {};
+Object.keys(TASKS_CONFIG).forEach(track=>{
+  TASKS_CONFIG[track].forEach(cfg=>{ PERMISSIONS[`${track}|${cfg.name}`] = cfg.editor; });
+});
+function getEditor(task){ return PERMISSIONS[`${task.track}|${task.name}`]; }
+
+function addDays(date, n){ const d=new Date(date); d.setDate(d.getDate()+n); return d; }
+function isoStr(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function initialsFromName(name){ return name.split(' ').filter(Boolean).map(p=>p[0]).join('').toUpperCase().slice(0,2); }
+function nowStamp(){
+  const now = new Date();
+  return { date: isoStr(TODAY), time: `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}` };
+}
+function fmtStamp(stamp){
+  if(!stamp) return '';
+  const [hh,mm] = stamp.time.split(':').map(Number);
+  const ampm = hh>=12 ? 'PM' : 'AM';
+  const h12 = ((hh+11)%12)+1;
+  return `${fmtFullDate(stamp.date)} · ${h12}:${String(mm).padStart(2,'0')} ${ampm}`;
+}
+
+function buildTasksForJO(jo, idx){
+  const tasks = [];
+  const deployDate = new Date(jo.targetDeploymentDate+'T00:00:00');
+  TRACK_DEFS.forEach((trackDef, tIdx)=>{
+    const items = TASKS_CONFIG[trackDef.key].slice().sort((a,b)=>a.order-b.order);
+    const advance = (idx*2 + tIdx*3) % (items.length+2);
+    items.forEach((cfg, i)=>{
+      const done = i < advance;
+      const due = isoStr(addDays(deployDate, cfg.offset));
+      tasks.push({
+        id: `${jo.id}-${trackDef.key}-${i}`,
+        joId: jo.id,
+        track: trackDef.key,
+        name: cfg.name,
+        done,
+        due,
+        doneAt: done ? {date: due, time:'09:00'} : null
+      });
+    });
+  });
+  return tasks;
+}
+
+function seedDB(){
+  const users = [
+    {id:'u1', name:'Doc Officer 1', role:'Doc Officer', initials:'D1'},
+    {id:'u2', name:'Doc Officer 2', role:'Doc Officer', initials:'D2'},
+    {id:'u3', name:'Doc Officer 3', role:'Doc Officer', initials:'D3'},
+    {id:'u4', name:'Doc Officer 4', role:'Doc Officer', initials:'D4'},
+    {id:'u5', name:'CEO', role:'CEO', initials:'CEO'}
+  ];
+  const kumiai = [
+    {id:'k1', name:'Fuji Cooperative Kumiai'},
+    {id:'k2', name:'Sakura Cooperative Kumiai'}
+  ];
+  const companies = [
+    {id:'c1', kumiaiId:'k1', name:'Yamato Construction Co.'},
+    {id:'c2', kumiaiId:'k1', name:'Kanto Builders Inc.'},
+    {id:'c3', kumiaiId:'k2', name:'Nihon Structural Corp.'},
+    {id:'c4', kumiaiId:'k2', name:'Tokai Engineering Ltd.'}
+  ];
+  const jobOrders = [
+    {id:'j1', jo:'2026-0143', companyId:'c1', candidateName:'Fernando Jusay', targetDeploymentDate: isoStr(addDays(TODAY,10)), workCategory:'Construction', programType:'TITP1', active:true},
+    {id:'j2', jo:'2026-0091', companyId:'c1', candidateName:'Alonzo Reyes', targetDeploymentDate: isoStr(addDays(TODAY,18)), workCategory:'Construction', programType:'SSW1', active:true},
+    {id:'j3', jo:'2026-0077', companyId:'c2', candidateName:'Marites Kintanar', targetDeploymentDate: isoStr(addDays(TODAY,26)), workCategory:'Caregiving', programType:'SSW1', active:true},
+    {id:'j4', jo:'2026-0065', companyId:'c2', candidateName:'Teodoro Santos', targetDeploymentDate: isoStr(addDays(TODAY,34)), workCategory:'Manufacturing', programType:'TITP2', active:true},
+    {id:'j5', jo:'2026-0088', companyId:'c3', candidateName:'Angelica Jimenez', targetDeploymentDate: isoStr(addDays(TODAY,42)), workCategory:'Caregiving', programType:'SSW2', active:true},
+    {id:'j6', jo:'2026-0104', companyId:'c3', candidateName:'Arnel Ramos', targetDeploymentDate: isoStr(addDays(TODAY,50)), workCategory:'Agriculture', programType:'TITP1', active:true},
+    {id:'j7', jo:'2026-0119', companyId:'c4', candidateName:'Arnold Javier', targetDeploymentDate: isoStr(addDays(TODAY,58)), workCategory:'Manufacturing', programType:'SSW1', active:true},
+    {id:'j8', jo:'2026-0156', companyId:'c4', candidateName:'Rowena Cruz', targetDeploymentDate: isoStr(addDays(TODAY,66)), workCategory:'Food Service', programType:'TITP1', active:true}
+  ];
+  let tasks = [];
+  jobOrders.forEach((jo, idx)=>{ tasks = tasks.concat(buildTasksForJO(jo, idx)); });
+  return {users, kumiai, companies, jobOrders, tasks};
+}
+
+let DB = null;
+let currentUserId = 'u2';
+let s1Detail = null;
+let s2Track = null, s2JO = null, s2Detail = null;
+let s3Track = null, s3JO = null, s3Detail = null;
+let s4Kumiai = 'all';
+let s4Company = null;
+let s2SearchTerm = '', s3SearchTerm = '', s4SearchTerm = '';
+let s2Profile = null, s3Profile = null;
+let s2Archived = false;
+let s2Form = null;
+const WORK_CATEGORIES = ['Construction','Caregiving','Manufacturing','Agriculture','Food Service'];
+const PROGRAM_TYPES = ['SSW1','SSW2','TITP1','TITP2','TITP3'];
+
+function saveDB(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+  const after = JSON.parse(JSON.stringify(DB));
+  const changes = lastSnapshot ? diffForLog(lastSnapshot, after) : [];
+  lastSnapshot = after;
+  if(changes.length) sendLog(changes);
+}
+
+/* ---------- Edit log → Google Sheet (EditLog tab) ----------
+   Every saveDB() call is diffed against the previous state, so any UI edit
+   (done toggles, activity, JO create/edit/archive/delete) is captured without
+   touching each handler. Sent to the Apps Script web app in apps-script/Code.gs.
+   Leave LOG_URL blank to turn logging off. */
+const LOG_URL = '';
+const LOG_TOKEN = 'kiroku-demo-token';
+let lastSnapshot = null;
+const LOG_COLLECTIONS = {Task:'tasks', JobOrder:'jobOrders', Company:'companies', Kumiai:'kumiai', User:'users'};
+function labelFor(x){
+  if(x.track) return `${x.track} · ${x.name}`;
+  return x.jo || x.name || x.id;
+}
+function diffForLog(before, after){
+  const out = [];
+  const actor = (getUser(currentUserId)||{}).name || currentUserId;
+  for(const [entity,key] of Object.entries(LOG_COLLECTIONS)){
+    const b = new Map((before[key]||[]).map(x=>[x.id,x]));
+    const a = new Map((after[key]||[]).map(x=>[x.id,x]));
+    for(const [id,x] of a){
+      const y = b.get(id);
+      if(!y){ out.push({user:actor, entity, entityId:id, field:'(created)', oldValue:'', newValue:labelFor(x)}); continue; }
+      for(const k of Object.keys(x)){
+        if(k==='activity') continue;
+        if(JSON.stringify(y[k]??null)!==JSON.stringify(x[k]??null))
+          out.push({user:actor, entity, entityId:id, field:k, oldValue:typeof y[k]==='object'?JSON.stringify(y[k]):(y[k]??''), newValue:typeof x[k]==='object'?JSON.stringify(x[k]):(x[k]??'')});
+      }
+      for(const act of (x.activity||[]).slice((y.activity||[]).length))
+        out.push({user:actor, entity, entityId:id, field:'activity', oldValue:'', newValue:`${act.type} ${act.date} ${act.time}`});
+    }
+    for(const [id,y] of b) if(!a.has(id)) out.push({user:actor, entity, entityId:id, field:'(deleted)', oldValue:labelFor(y), newValue:''});
+  }
+  return out;
+}
+function setLogStatus(text){ const el = document.getElementById('logTag'); if(el) el.textContent = text; }
+async function sendLog(changes){
+  if(!LOG_URL){ setLogStatus('logging off'); return; }
+  setLogStatus(`logging ${changes.length}…`);
+  try{
+    const res = await fetch(LOG_URL, {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({token: LOG_TOKEN, changes})});
+    const j = await res.json();
+    if(!j.ok) throw new Error(j.error || 'rejected');
+    setLogStatus(`✓ logged ${j.written} to Sheet`);
+  }catch(e){
+    console.warn('Edit log failed', e);
+    setLogStatus(`⚠ log failed: ${e.message}`);
+  }
+}
+function loadDB(){ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : null; }
+
+function getUser(id){ return DB.users.find(u=>u.id===id); }
+function getJO(id){ return DB.jobOrders.find(j=>j.id===id); }
+function getCompany(id){ return DB.companies.find(c=>c.id===id); }
+function getKumiai(id){ return DB.kumiai.find(k=>k.id===id); }
+function tasksForJO(joId){ return DB.tasks.filter(t=>t.joId===joId); }
+function tasksForUser(uid){ return DB.tasks.filter(t=>getEditor(t)===uid); }
+function activeJOsForCompany(cid){ return DB.jobOrders.filter(j=>j.companyId===cid && j.active); }
+function companiesForKumiai(kid){ return kid==='all' ? DB.companies : DB.companies.filter(c=>c.kumiaiId===kid); }
+function tasksInTrackAcrossActiveJOs(trackKey){ return DB.tasks.filter(t=>t.track===trackKey && getJO(t.joId).active); }
+function getTaskById(id){ return DB.tasks.find(t=>t.id===id); }
+
+function diffDays(iso){ const due=new Date(iso+'T00:00:00'); return Math.round((due-TODAY)/86400000); }
+function fmtDate(iso){ const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function fmtFullDate(iso){ const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+function computeStatus(t){
+  if(t.done) return 'done';
+  const d = diffDays(t.due);
+  if(d<0) return 'flagged';
+  if(d<=10) return 'pending';
+  return 'none';
+}
+function worstOf(taskList){
+  if(!taskList.length) return null;
+  return taskList.map(computeStatus).reduce((w,s)=> SEV[s]>SEV[w] ? s : w, 'done');
+}
+function dueBadgeHTML(t){
+  if(t.done) return '<span class="due-badge done">Done</span>';
+  const d = diffDays(t.due);
+  if(d<0) return `<span class="due-badge overdue">${Math.abs(d)}d overdue</span>`;
+  if(d<=10) return `<span class="due-badge pending">Due ${fmtDate(t.due)}</span>`;
+  return `<span class="due-badge upcoming">Due ${fmtDate(t.due)}</span>`;
+}
+function receivingHTML(joId){
+  const jo = getJO(joId), co = getCompany(jo.companyId), ku = getKumiai(co.kumiaiId);
+  return `Receiving Kumiai: <b>${ku.name}</b> · Receiving Company: <b>${co.name}</b>`;
+}
+function receivingPlainHTML(joId){
+  const jo = getJO(joId), co = getCompany(jo.companyId), ku = getKumiai(co.kumiaiId);
+  return `<b>${ku.name}</b> · <b>${co.name}</b>`;
+}
+/* JO Nametag: JO#, Receiving Org, Receiving Company, Track, Task — the standard 5-field identity block for any task reference */
+function joNametagHTML(joId, trackKey, taskName, opts){
+  const jo = getJO(joId), co = getCompany(jo.companyId), ku = getKumiai(co.kumiaiId);
+  const dark = opts && opts.dark;
+  return `<div class="jo-nametag ${dark?'on-dark':''}">
+    <div class="jnt-jo">JO# ${jo.jo}</div>
+    <div class="jnt-org">${ku.name} · ${co.name}</div>
+    <div class="jnt-task">${trackKey} · ${taskName}</div>
+  </div>`;
+}
+/* B.3 variant: Task is the title, Track shown as a grey badge, JO# on line 2, Org/Company on line 3 */
+function joNametagB3HTML(joId, trackKey, taskName){
+  const jo = getJO(joId), co = getCompany(jo.companyId), ku = getKumiai(co.kumiaiId);
+  return `<div class="jo-nametag">
+    <div class="jnt-title">${taskName}<span class="track-badge">${trackKey}</span></div>
+    <div class="jnt-jo2">JO# ${jo.jo}</div>
+    <div class="jnt-org">${ku.name} · ${co.name}</div>
+  </div>`;
+}
+function lastActivityDate(task, type){
+  const entries = (task.activity||[]).filter(a=>a.type===type);
+  if(!entries.length) return null;
+  return entries.reduce((max,a)=> a.date>max?a.date:max, entries[0].date);
+}
+
+/* ---------- permission / role helpers ---------- */
+function isCEO(user){ return user.role==='CEO'; }
+function canEditInContext(task, pageContext){
+  const user = getUser(currentUserId);
+  if(pageContext==='s3') return false;
+  if(isCEO(user)) return false;
+  return getEditor(task) === user.id;
+}
+function tabsFor(user){
+  if(isCEO(user)) return [{id:'s4', label:'CEO Page'}, {id:'s3', label:'All Due Gates'}];
+  return [{id:'s1', label:'My Tasks'}, {id:'s2', label:'My Due Gates'}, {id:'s3', label:'All Due Gates'}];
+}
+function myTracksFor(userId){
+  return TRACK_DEFS.filter(td => TASKS_CONFIG[td.key].some(cfg => cfg.editor===userId));
+}
+
+/* ---------- activity / scoring ---------- */
+function daysSince(iso){ return Math.round((TODAY - new Date(iso+'T00:00:00'))/86400000); }
+function loggedToday(task, type){ return (task.activity||[]).some(a=>a.type===type && a.date===isoStr(TODAY)); }
+function taskHasRecentActivity(t){ return (t.activity||[]).some(a=> (a.type==='followup'||a.type==='upload') && daysSince(a.date)>=0 && daysSince(a.date)<=7); }
+function groupHasRecentActivity(tasks){ return tasks.some(taskHasRecentActivity); }
+
+/* ---------- mutations ---------- */
+function toggleTask(taskId, pageContext){
+  const t = DB.tasks.find(x=>x.id===taskId);
+  if(!canEditInContext(t, pageContext)) return;
+  t.done = !t.done;
+  t.doneAt = t.done ? nowStamp() : null;
+  saveDB();
+  renderAllScreens();
+}
+function logActivity(taskId, type, pageContext){
+  const t = DB.tasks.find(x=>x.id===taskId);
+  if(!canEditInContext(t, pageContext)) return;
+  if(!t.activity) t.activity = [];
+  const s = nowStamp();
+  t.activity.push({type, date:s.date, time:s.time});
+  saveDB();
+  renderAllScreens();
+}
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=> el.classList.remove('show'), 1600);
+}
+function manualSave(){
+  saveDB();
+  showToast('✓ Saved');
+}
+function onUserChange(uid){
+  currentUserId = uid;
+  const user = getUser(uid);
+  s1Detail = null;
+  s2Profile = null; s3Profile = null; s2Archived = false; s2Form = null;
+  const myTracks = myTracksFor(uid);
+  s2Track = myTracks.length ? myTracks[0].key : null;
+  s2JO = firstJOForTrack(s2Track);
+  showScreenById(isCEO(user) ? 's4' : 's1');
+}
+async function resetSampleData(){
+  if(!confirm('Reload all data from the source (Google Sheet or bundled CSVs)? Local edits made in this browser will be discarded.')) return;
+  await reloadFromSource();
+  currentUserId = 'u2';
+  initSelections();
+  populateUserSwitch();
+  showScreenById('s1');
+}
+
+/* ---------- Google Sheet / CSV loader ---------- */
+function parseCSV(text){
+  const rows = []; let row = [], cell = '', q = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(q){
+      if(c==='"' && text[i+1]==='"'){ cell+='"'; i++; }
+      else if(c==='"') q=false;
+      else cell+=c;
+    } else if(c==='"') q=true;
+    else if(c===','){ row.push(cell); cell=''; }
+    else if(c==='\n'){ row.push(cell); rows.push(row); row=[]; cell=''; }
+    else if(c!=='\r') cell+=c;
+  }
+  if(cell.length || row.length){ row.push(cell); rows.push(row); }
+  return rows;
+}
+function sheetIdFromPage(){
+  return new URLSearchParams(location.search).get('sheet') || SHEET_ID;
+}
+async function fetchTab(tab, sheetId){
+  const url = sheetId
+    ? `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tab)}`
+    : `data/${tab}.csv`;
+  const res = await fetch(url, {cache:'no-store'});
+  if(!res.ok) throw new Error(`${tab}: HTTP ${res.status}`);
+  const rows = parseCSV(await res.text());
+  if(!rows.length) throw new Error(`${tab}: empty tab`);
+  return rows;
+}
+function tabToObjects(rows){
+  const hdr = rows[0].map(h=>h.trim());
+  return rows.slice(1).filter(r=>r.some(c=>c.trim()!==''))
+    .map(r=>Object.fromEntries(hdr.map((h,i)=>[h,(r[i]??'').trim()])));
+}
+function buildDBFromTabs(t){
+  const R = Object.fromEntries(Object.entries(t).map(([k,rows])=>[k,tabToObjects(rows)]));
+  const actByTask = {};
+  R.Activity.forEach(a=>{ (actByTask[a.task_id] ||= []).push({type:a.type, date:a.date, time:a.time}); });
+  return {
+    users: R.Users.map(r=>({id:r.user_id, name:r.name, role:r.role, initials:''})),
+    kumiai: R.Kumiai.map(r=>({id:r.kumiai_id, name:r.name})),
+    companies: R.Companies.map(r=>({id:r.company_id, kumiaiId:r.kumiai_id, name:r.name})),
+    jobOrders: R.JobOrders.map(r=>({id:r.jo_id, jo:r.jo_number, companyId:r.company_id, candidateName:r.worker_name,
+      targetDeploymentDate:r.target_deployment_date, workCategory:r.work_category, programType:r.program_type,
+      active:r.active.toUpperCase()==='TRUE'})),
+    tasks: R.Tasks.map(r=>{
+      const [dDate, dTime] = (r.done_at||'').split(' ');
+      return {id:r.task_id, joId:r.jo_id, track:r.track, name:r.task_name, done:r.done.toUpperCase()==='TRUE',
+        due:r.due_date, doneAt: dDate ? {date:dDate, time:dTime||'09:00'} : null, activity: actByTask[r.task_id]||[]};
+    })
+  };
+}
+async function loadFromSource(){
+  const sheetId = sheetIdFromPage();
+  const entries = await Promise.all(SHEET_TABS.map(async tab=>[tab, await fetchTab(tab, sheetId)]));
+  const db = buildDBFromTabs(Object.fromEntries(entries));
+  SOURCE_LABEL = sheetId ? `Google Sheet ${sheetId.slice(0,8)}…` : 'Bundled CSV (data/)';
+  return db;
+}
+async function reloadFromSource(){
+  try { DB = await loadFromSource(); }
+  catch(e){
+    console.warn('Source load failed, using built-in sample:', e);
+    DB = seedDB();
+    SOURCE_LABEL = `Built-in sample (source failed: ${e.message})`;
+  }
+  lastSnapshot = null;
+  saveDB();
+  document.getElementById('dbTag').textContent = `${DB.tasks.length} tasks · ${DB.users.length} users · source: ${SOURCE_LABEL}`;
+}
+
+/* ---------- Job Order management (Doc Officer 1 only) ---------- */
+function canManageJOs(){ return currentUserId==='u1'; }
+function buildFreshTasksForJO(jo){
+  const tasks = [];
+  const deployDate = new Date(jo.targetDeploymentDate+'T00:00:00');
+  TRACK_DEFS.forEach(trackDef=>{
+    TASKS_CONFIG[trackDef.key].slice().sort((a,b)=>a.order-b.order).forEach((cfg,i)=>{
+      const due = isoStr(addDays(deployDate, cfg.offset));
+      tasks.push({id:`${jo.id}-${trackDef.key}-${i}`, joId:jo.id, track:trackDef.key, name:cfg.name, done:false, due, doneAt:null});
+    });
+  });
+  return tasks;
+}
+function readJOForm(){
+  return {
+    num: document.getElementById('jf-num').value.trim(),
+    deploy: document.getElementById('jf-deploy').value,
+    companyId: document.getElementById('jf-company').value,
+    workCategory: document.getElementById('jf-workcat').value,
+    programType: document.getElementById('jf-progtype').value
+  };
+}
+function onFormKumiaiChange(){
+  const kid = document.getElementById('jf-kumiai').value;
+  const sel = document.getElementById('jf-company');
+  const companies = companiesForKumiai(kid);
+  sel.innerHTML = companies.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+}
+function submitCreateJO(){
+  if(!canManageJOs()) return;
+  const f = readJOForm();
+  if(!f.num || !f.deploy || !f.companyId){ alert('JO number, target deploy date, and company are required.'); return; }
+  const id = 'j'+Date.now();
+  const jo = {id, jo:f.num, companyId:f.companyId, targetDeploymentDate:f.deploy, workCategory:f.workCategory, programType:f.programType, active:true};
+  DB.jobOrders.push(jo);
+  DB.tasks = DB.tasks.concat(buildFreshTasksForJO(jo));
+  saveDB();
+  s2Form = null;
+  s2Profile = id;
+  renderAllScreens();
+  showToast('✓ Job Order created');
+}
+function submitEditJO(joId){
+  if(!canManageJOs()) return;
+  const jo = getJO(joId);
+  const f = readJOForm();
+  if(!f.num || !f.deploy || !f.companyId){ alert('JO number, target deploy date, and company are required.'); return; }
+  const deployChanged = jo.targetDeploymentDate !== f.deploy;
+  jo.jo = f.num; jo.companyId = f.companyId; jo.targetDeploymentDate = f.deploy; jo.workCategory = f.workCategory; jo.programType = f.programType;
+  if(deployChanged){
+    const deployDate = new Date(f.deploy+'T00:00:00');
+    tasksForJO(joId).forEach(t=>{
+      const cfg = TASKS_CONFIG[t.track].find(c=>c.name===t.name);
+      t.due = isoStr(addDays(deployDate, cfg.offset));
+    });
+  }
+  saveDB();
+  s2Form = null;
+  renderAllScreens();
+  showToast('✓ Saved');
+}
+function archiveJO(joId){
+  if(!canManageJOs()) return;
+  getJO(joId).active = false;
+  saveDB();
+  s2Profile = null;
+  renderAllScreens();
+  showToast('🗄 Archived');
+}
+function reactivateJO(joId){
+  if(!canManageJOs()) return;
+  getJO(joId).active = true;
+  saveDB();
+  renderAllScreens();
+  showToast('↩ Reactivated');
+}
+function deleteJOConfirm(joId){
+  if(!canManageJOs()) return;
+  const jo = getJO(joId);
+  const count = tasksForJO(joId).length;
+  if(!confirm(`Delete JO# ${jo.jo} permanently? This removes the Job Order and all ${count} tasks. This cannot be undone.`)) return;
+  DB.jobOrders = DB.jobOrders.filter(j=>j.id!==joId);
+  DB.tasks = DB.tasks.filter(t=>t.joId!==joId);
+  saveDB();
+  s2Profile = null;
+  renderAllScreens();
+  showToast('🗑 Deleted');
+}
+
+/* ---------- selection helpers ---------- */
+function firstJOForTrack(trackKey){
+  if(!trackKey) return null;
+  const list = DB.jobOrders.filter(j=>j.active && tasksForJO(j.id).some(t=>t.track===trackKey && !t.done));
+  return list.length ? list[0].id : (DB.jobOrders.find(j=>j.active)||{}).id || null;
+}
+function josForTrack(trackKey){
+  if(!trackKey) return [];
+  return DB.jobOrders.filter(j=>j.active && tasksForJO(j.id).some(t=>t.track===trackKey && !t.done));
+}
+function initSelections(){
+  const myTracks = myTracksFor(currentUserId);
+  s2Track = myTracks.length ? myTracks[0].key : null;
+  s2JO = firstJOForTrack(s2Track);
+  const trackWithOpenWork = TRACK_DEFS.find(t=>josForTrack(t.key).length>0);
+  s3Track = trackWithOpenWork ? trackWithOpenWork.key : TRACK_DEFS[0].key;
+  s3JO = firstJOForTrack(s3Track);
+  s4Kumiai = 'all';
+  s4Company = null;
+  s2Profile = null; s3Profile = null; s2Archived = false; s2Form = null;
+}
+
+function selectS2Track(k){ s2Track=k; s2JO=firstJOForTrack(k); renderAllScreens(); }
+function selectS2JO(id){ s2JO=id; renderAllScreens(); }
+function selectS3Track(k){ s3Track=k; s3JO=firstJOForTrack(k); renderAllScreens(); }
+function selectS3JO(id){ s3JO=id; renderAllScreens(); }
+function openDueGatesTaskDetail(taskId, pageContext){
+  if(pageContext==='s2') s2Detail=taskId; else s3Detail=taskId;
+  renderAllScreens();
+}
+function closeS2Detail(){ s2Detail=null; renderAllScreens(); }
+function closeS3Detail(){ s3Detail=null; renderAllScreens(); }
+function openS2Profile(joId){ s2Profile=joId; renderAllScreens(); }
+function closeS2Profile(){ s2Profile=null; renderAllScreens(); }
+function openS3Profile(joId){ s3Profile=joId; renderAllScreens(); }
+function closeS3Profile(){ s3Profile=null; renderAllScreens(); }
+function openS2Archived(){ s2Archived=true; renderAllScreens(); }
+function closeS2Archived(){ s2Archived=false; renderAllScreens(); }
+function openS2Form(joId){ s2Form = joId || 'create'; renderAllScreens(); }
+function closeS2Form(){ s2Form=null; renderAllScreens(); }
+function viewArchivedJO(joId){ s2Archived=false; s2Profile=joId; renderAllScreens(); }
+function selectS4Kumiai(kid){ s4Kumiai=kid; s4Company=null; renderAllScreens(); }
+function selectS4Company(cid){ s4Company=cid; renderAllScreens(); }
+function onSearchInput(val, which){
+  if(which==='s2') s2SearchTerm=val;
+  else if(which==='s3') s3SearchTerm=val;
+  else if(which==='s4') s4SearchTerm=val;
+  renderAllScreens();
+  const el = document.getElementById('search-'+which);
+  if(el){ el.focus(); const v=el.value; el.setSelectionRange(v.length, v.length); }
+}
+function openTaskDetail(taskId){ s1Detail=taskId; renderAllScreens(); }
+function closeTaskDetail(){ s1Detail=null; renderAllScreens(); }
+function openDetailFor(taskId, pageContext){
+  if(pageContext==='s1') openTaskDetail(taskId);
+  else openDueGatesTaskDetail(taskId, pageContext);
+}
+
+/* ---------- nav ---------- */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  renderAllScreens();
+}
+function showScreenById(id){ showScreen(id); }
+
+function navHTML(activeTab){
+  const user = getUser(currentUserId);
+  const tabs = tabsFor(user);
+  return `<div class="app-nav">
+    <span class="brand">☰ Kiroku · Completeness Gate</span>
+    ${tabs.map(t=> `<span class="tab ${t.label===activeTab?'on':''}" onclick="showScreenById('${t.id}')">${t.label}</span>`).join('')}
+    <span class="spacer"></span>
+    <span class="who">🔔 ${user.name} (${user.role})</span>
+    ${isCEO(user) ? '<span class="readonly-pill">View only</span>' : ''}
+  </div>`;
+}
+
+/* ================= SCREEN 1 : My Tasks ================= */
+function buildScreen1(){
+  const user = getUser(currentUserId);
+  const my = tasksForUser(user.id);
+  const doneCount = my.filter(t=>t.done).length;
+  const total = my.length;
+  const pct = total ? Math.round(doneCount/total*100) : 0;
+  const overdueCount = my.filter(t=>computeStatus(t)==='flagged').length;
+  const trackCount = new Set(my.map(t=>t.track)).size;
+
+  const open = my.filter(t=>!t.done).slice().sort((a,b)=> SEV[computeStatus(b)]-SEV[computeStatus(a)] || diffDays(a.due)-diffDays(b.due));
+  const myAllSorted = my.slice().sort((a,b)=> SEV[computeStatus(b)]-SEV[computeStatus(a)] || diffDays(a.due)-diffDays(b.due));
+
+  let body;
+  if(s1Detail){
+    const task = getTaskById(s1Detail);
+    const idx = myAllSorted.findIndex(t=>t.id===s1Detail);
+    const prevTask = idx>0 ? myAllSorted[idx-1] : null;
+    const nextTask = (idx>=0 && idx<myAllSorted.length-1) ? myAllSorted[idx+1] : null;
+    const pagerHTML = `<span class="task-pager">
+      <button class="pager-btn" ${prevTask?`onclick="openTaskDetail('${prevTask.id}')"`:'disabled'}>◀</button>
+      <span class="pager-lbl">${idx+1}/${myAllSorted.length}</span>
+      <button class="pager-btn" ${nextTask?`onclick="openTaskDetail('${nextTask.id}')"`:'disabled'}>▶</button>
+    </span>`;
+    body = buildJODetail(task.joId, s1Detail, 'closeTaskDetail()', '← Back to My Tasks', 's1', pagerHTML);
+  } else {
+    const doneList = my.filter(t=>t.done).slice().sort((a,b)=>{
+      const av = a.doneAt ? a.doneAt.date+a.doneAt.time : '';
+      const bv = b.doneAt ? b.doneAt.date+b.doneAt.time : '';
+      return bv.localeCompare(av);
+    }).slice(0,3);
+    const myActivity = my.flatMap(t=>(t.activity||[]).map(a=>({...a, task:t})))
+      .sort((a,b)=> (b.date+b.time).localeCompare(a.date+a.time))
+      .slice(0,5);
+    const topTask = open[0];
+    const queueRows = open.slice(0,8).map(t=>{
+      const st = computeStatus(t);
+      const dtext = diffDays(t.due)<0 ? `${Math.abs(diffDays(t.due))}D` : `${diffDays(t.due)}D`;
+      return `<div class="queue-item" onclick="openTaskDetail('${t.id}')">
+        <span class="ball ${st}"></span>
+        <div class="qbody">${joNametagHTML(t.joId, t.track, t.name)}</div>
+        <span class="qd">${dtext}</span>
+      </div>`;
+    }).join('') || '<div class="empty-note">All caught up — nothing open right now.</div>';
+
+    body = `
+    <div class="body-row">
+      <div class="main-col">
+        <div class="greet">
+          <h2>Good day, ${user.name}</h2>
+          <p>${total} task${total===1?'':'s'} assigned to you in this sample database.</p>
+        </div>
+        ${topTask ? `<div class="cta-banner" onclick="openTaskDetail('${topTask.id}')">
+          <div class="play">▶</div>
+          <div><div class="lbl">Continue with</div>${joNametagHTML(topTask.joId, topTask.track, topTask.name, {dark:true})}</div>
+        </div>` : ''}
+        <div class="stat-row">
+          <div class="stat-chip c-red"><div class="sv">${overdueCount}</div><div class="sl">Overdue</div></div>
+          <div class="stat-chip c-blue"><div class="sv">${open.length}</div><div class="sl">Open tasks</div></div>
+          <div class="stat-chip c-gold"><div class="sv">${trackCount}</div><div class="sl">Tracks touched</div></div>
+        </div>
+        <div class="dual-card-row">
+          <div class="card">
+            <div class="card-hd"><span class="t">My Recently Completed</span></div>
+            ${doneList.length ? doneList.map(t=>{
+              return `<div class="done-row"><span class="ck">✓</span><div class="ci-body">${joNametagHTML(t.joId, t.track, t.name)}<div class="ci-badges"><span class="badge-done">Completed · ${fmtStamp(t.doneAt)}</span></div></div></div>`;
+            }).join('') : '<div class="empty-note">Nothing completed yet.</div>'}
+          </div>
+          <div class="card">
+            <div class="card-hd"><span class="t">My Recent Actions</span></div>
+            ${myActivity.length ? myActivity.map(a=>{
+              const meta = ACTION_META[a.type];
+              return `<div class="done-row"><span class="ck" style="color:var(--ink-soft);">${meta.icon}</span><div class="ci-body">${joNametagHTML(a.task.joId, a.task.track, a.task.name)}<div class="ci-badges"><span class="badge-followup">${meta.label} · ${fmtStamp(a)}</span></div></div></div>`;
+            }).join('') : '<div class="empty-note">No actions logged yet.</div>'}
+          </div>
+        </div>
+      </div>
+      <div class="side-col">
+        <div class="side-hd"><span class="lbl">To do</span><span class="count">${open.length}</span></div>
+        <div class="side-list">${queueRows}</div>
+      </div>
+    </div>
+    <div class="bottom-bar">✓ Cleared: ${doneCount} / ${total} <span class="dim">·</span> ${pct}% complete</div>`;
+  }
+
+  return navHTML('My Tasks') + `
+    <div class="status-strip">
+      <div class="date">Fri, Jul 31 · sample data</div>
+      <div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div class="pct">${doneCount} / ${total} · ${pct}%</div></div>
+      <div class="mini-stats"><span><b>${overdueCount}</b> overdue</span><span>${DB.tasks.length} tasks in database</span></div>
+    </div>
+    ${body}`;
+}
+
+function buildJODetail(joId, highlightTaskId, backFn, backLabel, pageContext, pagerHTML){
+  const jo = getJO(joId);
+  const tasks = tasksForJO(joId).slice().sort((a,b)=> TRACK_DEFS.findIndex(t=>t.key===a.track) - TRACK_DEFS.findIndex(t=>t.key===b.track));
+  const doneCount = tasks.filter(t=>t.done).length;
+  const total = tasks.length;
+  const pct = total ? Math.round(doneCount/total*100) : 0;
+  const current = highlightTaskId ? getTaskById(highlightTaskId) : null;
+  const worst = worstOf(tasks);
+  const heroStatusText = current
+    ? `${current.track} — ${computeStatus(current)==='flagged' ? Math.abs(diffDays(current.due))+' days overdue' : (computeStatus(current)==='pending' ? 'due soon' : (current.done ? 'done' : 'upcoming'))}`
+    : `${doneCount} of ${total} gates cleared`;
+
+  const gateRows = tasks.map(t=>{
+    const st = computeStatus(t);
+    const isCurrent = current && t.id===current.id;
+    const editable = canEditInContext(t, pageContext);
+    return `<div class="gate-row ${isCurrent?'current':''}" onclick="openDetailFor('${t.id}','${pageContext}')">
+      <span class="ball ${st} ${editable?'':'locked'}" onclick="event.stopPropagation();${editable?` toggleTask('${t.id}','${pageContext}')`:''}"></span>
+      <span class="gn">${t.name} <span style="color:var(--ink-soft); font-weight:400;">· ${t.track}</span></span>
+      ${editable?'':'<span class="lock-ico">🔒</span>'}
+      ${dueBadgeHTML(t)}
+    </div>`;
+  }).join('');
+
+  const actionTarget = current || tasks[0];
+  const taskActivity = (actionTarget.activity||[]).slice().sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+
+  return `<div class="detail-top"><span class="back-link" onclick="${backFn}">${backLabel}</span>${pagerHTML||''}</div>
+  <div class="body-row">
+    <div class="main-col" style="padding-top:15px;">
+      <div class="task-hero">
+        <div class="av">${initialsFromName(jo.candidateName)}</div>
+        <div><div class="n">JO# ${jo.jo}</div><div class="s">${heroStatusText}</div><div class="hrecv">${receivingHTML(joId)} · Target Deploy: <b>${fmtDate(jo.targetDeploymentDate)}</b></div></div>
+      </div>
+      <div class="task-title">${current ? current.name : 'Job Order Gate Checklist'}</div>
+      <div class="meta-row">
+        ${current ? `<div><span class="m-lbl">Due</span>${fmtDate(current.due)}</div>` : ''}
+        <div><span class="m-lbl">Gates cleared</span>${doneCount} of ${total}</div>
+        <div><span class="m-lbl">Overall status</span><span class="${worst==='flagged'?'overdue':''}">${worst==='flagged'?'Overdue items present':worst==='pending'?'Due soon':worst==='done'?'All clear':'On track'}</span></div>
+      </div>
+      <div class="action-label">Log Actions</div>
+      <div class="action-row">
+        ${actionButtonHTML('followup','🔁','Follow Up', actionTarget, pageContext)}
+        ${actionButtonHTML('message','✉️','Send Message', actionTarget, pageContext)}
+        ${actionButtonHTML('note','📝','Log Note', actionTarget, pageContext)}
+        ${actionButtonHTML('upload','📎','Upload', actionTarget, pageContext)}
+        ${markDoneButtonHTML(actionTarget, pageContext)}
+        <button class="save-btn" onclick="manualSave()" title="Save manually">💾</button>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="t">Notes</span></div>
+        <div class="empty-note">No notes logged for this Job Order in the sample dataset.</div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span class="t">Recent Actions</span></div>
+        ${taskActivity.length ? taskActivity.map(a=>{
+          const meta = ACTION_META[a.type];
+          return `<div class="done-row"><span class="ck" style="color:var(--ink-soft);">${meta.icon}</span><div class="ci-body"><div class="jnt-title" style="font-weight:700;">${meta.label}</div><div class="ci-badges"><span class="badge-followup">${fmtStamp(a)}</span></div></div></div>`;
+        }).join('') : '<div class="empty-note">No actions logged for this task yet.</div>'}
+      </div>
+    </div>
+    <div class="side-col">
+      <div class="gate-ring-wrap">
+        <div class="gate-ring" style="background:conic-gradient(var(--blue) 0% ${pct}%, #E5E7EB ${pct}% 100%)"><div class="hole">${doneCount}/${total}</div></div>
+        <div><div style="font-size:11.5px;font-weight:800;color:var(--ink-soft);letter-spacing:.05em;">TO DO</div><div style="font-size:13px;font-weight:700;">Job Order Gates</div></div>
+        <button class="save-btn" onclick="manualSave()" title="Save manually">💾</button>
+      </div>
+      <div class="gate-list-scroll">${gateRows}</div>
+    </div>
+  </div>
+  <div class="bottom-bar">✓ ${doneCount} of ${total} gates cleared for JO# ${jo.jo}</div>`;
+}
+
+function actionButtonHTML(type, icon, label, task, pageContext){
+  const editable = canEditInContext(task, pageContext);
+  if(!editable) return `<button class="act-btn locked" disabled><span class="ico">🔒</span>${label}</button>`;
+  if(loggedToday(task, type)) return `<button class="act-btn logged-today" disabled><span class="ico">✓</span>${label} logged</button>`;
+  return `<button class="act-btn" onclick="logActivity('${task.id}','${type}','${pageContext}')"><span class="ico">${icon}</span>${label}</button>`;
+}
+function markDoneButtonHTML(task, pageContext){
+  const editable = canEditInContext(task, pageContext);
+  if(!editable) return `<button class="act-btn primary locked" disabled><span class="ico">🔒</span>Mark Done</button>`;
+  return `<button class="act-btn primary" onclick="toggleTask('${task.id}','${pageContext}')"><span class="ico">✅</span>${task.done?'Mark Open':'Mark Done'}</button>`;
+}
+
+/* ================= JO Profile / Archived table / Create+Edit form ================= */
+function buildJOProfile(joId, pageContext){
+  const jo = getJO(joId);
+  const co = getCompany(jo.companyId);
+  const ku = getKumiai(co.kumiaiId);
+  const tasks = tasksForJO(joId);
+  const doneCount = tasks.filter(t=>t.done).length;
+  const total = tasks.length;
+  const pct = total ? Math.round(doneCount/total*100) : 0;
+  const overdueCount = tasks.filter(t=>computeStatus(t)==='flagged').length;
+  const canManage = pageContext==='s2' && canManageJOs() && jo.active;
+  const backFn = pageContext==='s2' ? 'closeS2Profile()' : 'closeS3Profile()';
+  const backLabel = pageContext==='s2' ? '← Back to My Due Gates' : '← Back to All Due Gates';
+
+  const cells = TRACK_DEFS.map(tr=>{
+    const tks = tasks.filter(t=>t.track===tr.key);
+    const st = tks.length ? worstOf(tks) : null;
+    const dCount = tks.filter(t=>t.done).length;
+    const ring = tks.length && st!=='done' && groupHasRecentActivity(tks);
+    const dotColor = !st ? '#D8DBDE' : st==='flagged'?'var(--darkred)':st==='pending'?'var(--gold)':st==='done'?'var(--blue)':'#D8DBDE';
+    return `<div class="tsc" title="${tr.name}${ring?' · followed up within 7 days':''}">
+      <div class="tscball ${ring?'active-ring':''}" style="background:${dotColor};">${tks.length ? `<div class="tsc-num">${dCount}</div><div class="tsc-of">of ${tks.length}</div>` : '—'}</div>
+      <div class="tsclabel">${tr.name}</div>
+    </div>`;
+  }).join('');
+
+  const doneList = tasks.filter(t=>t.done).slice().sort((a,b)=>{
+    const av = a.doneAt ? a.doneAt.date+a.doneAt.time : '';
+    const bv = b.doneAt ? b.doneAt.date+b.doneAt.time : '';
+    return bv.localeCompare(av);
+  }).slice(0,5);
+  const activityList = tasks.flatMap(t=>(t.activity||[]).map(a=>({...a, task:t})))
+    .sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time)).slice(0,5);
+
+  const gateRows = tasks.map(t=>{
+    const st = computeStatus(t);
+    const editable = canEditInContext(t, pageContext);
+    return `<div class="gate-row" onclick="openDetailFor('${t.id}','${pageContext}')">
+      <span class="ball ${st} ${editable?'':'locked'}" onclick="event.stopPropagation();${editable?` toggleTask('${t.id}','${pageContext}')`:''}"></span>
+      <span class="gn">${t.name} <span style="color:var(--ink-soft); font-weight:400;">· ${t.track}</span></span>
+      ${editable?'':'<span class="lock-ico">🔒</span>'}
+      ${dueBadgeHTML(t)}
+    </div>`;
+  }).join('');
+
+  return `<div class="detail-top"><span class="back-link" onclick="${backFn}">${backLabel}</span></div>
+  <div class="status-strip">
+    <div class="date">Target Deploy: ${fmtDate(jo.targetDeploymentDate)}</div>
+    <div class="progress-mini"><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div><div class="pct">${doneCount} / ${total} · ${pct}%</div></div>
+    <div class="mini-stats"><span><b>${overdueCount}</b> overdue</span><span>${total} tasks total</span></div>
+  </div>
+  <div class="body-row">
+    <div class="main-col">
+      <div class="greet">
+        <h2>JO# ${jo.jo}${!jo.active ? ' <span style="color:var(--ink-soft); font-weight:600; font-size:13px;">(Archived)</span>' : ''}</h2>
+        <p>${ku.name} · ${co.name}${jo.workCategory?` · ${jo.workCategory}`:''}${jo.programType?` · ${jo.programType}`:''}</p>
+      </div>
+      ${canManage ? `<div class="greet-actions">
+        <button class="act-btn" onclick="openS2Form('${joId}')">✏️ Edit</button>
+        <button class="act-btn" onclick="archiveJO('${joId}')">🗄 Archive</button>
+      </div>` : ''}
+      <div class="section-label">Track progress</div>
+      <div class="track-summary-grid">${cells}</div>
+      <div class="section-label">By all users</div>
+      <div class="dual-card-row">
+        <div class="card">
+          <div class="card-hd"><span class="t">Recently Completed</span></div>
+          ${doneList.length ? doneList.map(t=>`<div class="done-row"><span class="ck">✓</span><div class="ci-body"><div style="font-weight:700;">${t.name} · ${t.track}</div><div style="font-size:11px;color:var(--ink-soft);margin-top:1px;">${getUser(getEditor(t)).name}</div><div class="ci-badges"><span class="badge-done">Completed · ${fmtStamp(t.doneAt)}</span></div></div></div>`).join('') : '<div class="empty-note">Nothing completed yet.</div>'}
+        </div>
+        <div class="card">
+          <div class="card-hd"><span class="t">Recent Actions</span></div>
+          ${activityList.length ? activityList.map(a=>{
+            const meta = ACTION_META[a.type];
+            return `<div class="done-row"><span class="ck" style="color:var(--ink-soft);">${meta.icon}</span><div class="ci-body"><div style="font-weight:700;">${a.task.name} · ${a.task.track}</div><div style="font-size:11px;color:var(--ink-soft);margin-top:1px;">${getUser(getEditor(a.task)).name}</div><div class="ci-badges"><span class="badge-followup">${meta.label} · ${fmtStamp(a)}</span></div></div></div>`;
+          }).join('') : '<div class="empty-note">No actions logged yet.</div>'}
+        </div>
+      </div>
+    </div>
+    <div class="side-col">
+      <div class="side-hd"><span class="lbl">Job Order Gates</span><span class="count">${total}</span></div>
+      <div class="gate-list-scroll">${gateRows}</div>
+    </div>
+  </div>`;
+}
+
+function buildArchivedTable(){
+  const archived = DB.jobOrders.filter(j=>!j.active);
+  const rows = archived.map(j=>{
+    const co = getCompany(j.companyId), ku = getKumiai(co.kumiaiId);
+    return `<tr>
+      <td>JO# ${j.jo}</td><td>${ku.name}</td><td>${co.name}</td><td>${fmtDate(j.targetDeploymentDate)}</td>
+      <td class="actions">
+        <button class="act-btn small" onclick="viewArchivedJO('${j.id}')">View</button>
+        <button class="act-btn small" onclick="reactivateJO('${j.id}')">↩ Reactivate</button>
+        <button class="act-btn small danger" onclick="deleteJOConfirm('${j.id}')">🗑 Delete</button>
+      </td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="5" style="padding:15px 22px; color:var(--ink-soft); font-style:italic;">No archived Job Orders.</td></tr>';
+  return `<div class="detail-top"><span class="back-link" onclick="closeS2Archived()">← Back to My Due Gates</span></div>
+    <div style="padding:18px 22px 4px;"><span style="font-family:var(--font-head); font-weight:800; font-size:16px;">Archived Job Orders</span></div>
+    <table class="jo-table" style="margin-bottom:20px;">
+      <tr><th>JO #</th><th>Receiving Org</th><th>Receiving Company</th><th>Target Deploy</th><th>Actions</th></tr>
+      ${rows}
+    </table>`;
+}
+
+function buildJOFormPanel(formState){
+  const isCreate = formState==='create';
+  const jo = isCreate ? null : getJO(formState);
+  const co = jo ? getCompany(jo.companyId) : null;
+  const initialKumiaiId = co ? co.kumiaiId : (DB.kumiai[0] ? DB.kumiai[0].id : '');
+  const companyOptions = companiesForKumiai(initialKumiaiId).map(c=>`<option value="${c.id}" ${jo && jo.companyId===c.id?'selected':''}>${c.name}</option>`).join('');
+  const kumiaiOptions = DB.kumiai.map(k=>`<option value="${k.id}" ${k.id===initialKumiaiId?'selected':''}>${k.name}</option>`).join('');
+  const workCatOptions = WORK_CATEGORIES.map(w=>`<option ${jo && jo.workCategory===w?'selected':''}>${w}</option>`).join('');
+  const progTypeOptions = PROGRAM_TYPES.map(p=>`<option ${jo && jo.programType===p?'selected':''}>${p}</option>`).join('');
+
+  let previewHTML, previewCount;
+  if(isCreate){
+    previewCount = 18;
+    previewHTML = `<div id="jf-preview-list"><div class="empty-note">Enter a Target Deploy Date to preview the checklist.</div></div>`;
+  } else {
+    const tasks = tasksForJO(formState).slice().sort((a,b)=> TRACK_DEFS.findIndex(t=>t.key===a.track) - TRACK_DEFS.findIndex(t=>t.key===b.track));
+    previewCount = tasks.length;
+    previewHTML = `<div id="jf-preview-list">${tasks.map(t=>`<div class="gate-row"><span class="ball ${computeStatus(t)}"></span><span class="gn">${t.name} <span style="color:var(--ink-soft); font-weight:400;">· ${t.track}</span></span>${dueBadgeHTML(t)}</div>`).join('')}</div>`;
+  }
+
+  return `<div style="flex:1; display:flex; flex-direction:row; min-width:0; height:100%;">
+    <div style="flex:0 0 320px; border-right:1px solid var(--border); padding:18px; overflow-y:auto; height:100%; box-sizing:border-box;">
+      <div class="section-label" style="margin-top:0;">${isCreate?'New Job Order':'Edit JO# '+jo.jo}</div>
+      <div class="form-field" style="margin-bottom:12px;"><label>JO number</label><input id="jf-num" value="${jo?jo.jo:''}" placeholder="2026-0201"></div>
+      <div class="form-field" style="margin-bottom:12px;"><label>Target deploy date</label><input id="jf-deploy" type="date" value="${jo?jo.targetDeploymentDate:''}" ${isCreate?'oninput="updateJOFormPreview()"':''}></div>
+      <div class="form-field" style="margin-bottom:12px;"><label>Receiving Organization</label><select id="jf-kumiai" onchange="onFormKumiaiChange()">${kumiaiOptions}</select></div>
+      <div class="form-field" style="margin-bottom:12px;"><label>Receiving Company</label><select id="jf-company">${companyOptions}</select></div>
+      <div class="form-field" style="margin-bottom:12px;"><label>Work category</label><select id="jf-workcat">${workCatOptions}</select></div>
+      <div class="form-field" style="margin-bottom:18px;"><label>Program type</label><select id="jf-progtype">${progTypeOptions}</select></div>
+      <div style="display:flex; gap:8px;">
+        <button class="act-btn primary" onclick="${isCreate?'submitCreateJO()':`submitEditJO('${formState}')`}">${isCreate?'Create Job Order':'Save changes'}</button>
+        <button class="act-btn" onclick="closeS2Form()">Cancel</button>
+      </div>
+    </div>
+    <div style="flex:1; min-width:0; display:flex; flex-direction:column; height:100%;">
+      <div class="side-hd"><span class="lbl">Checklist${isCreate?' preview':''}</span><span class="count">${previewCount}</span></div>
+      <div class="gate-list-scroll">${previewHTML}</div>
+    </div>
+  </div>`;
+}
+function updateJOFormPreview(){
+  const el = document.getElementById('jf-deploy');
+  const container = document.getElementById('jf-preview-list');
+  if(!el || !container) return;
+  const val = el.value;
+  if(!val){ container.innerHTML = '<div class="empty-note">Enter a Target Deploy Date to preview the checklist.</div>'; return; }
+  const deployDate = new Date(val+'T00:00:00');
+  let rows = '';
+  TRACK_DEFS.forEach(trackDef=>{
+    TASKS_CONFIG[trackDef.key].slice().sort((a,b)=>a.order-b.order).forEach(cfg=>{
+      const due = isoStr(addDays(deployDate, cfg.offset));
+      rows += `<div class="gate-row"><span class="ball none"></span><span class="gn">${cfg.name} <span style="color:var(--ink-soft); font-weight:400;">· ${trackDef.key}</span></span>${dueBadgeHTML({done:false, due})}</div>`;
+    });
+  });
+  container.innerHTML = rows;
+}
+
+/* ================= SCREENS 2 & 3 : Due Gates (Template B) ================= */
+function buildDueGatesScreen(scope){
+  const isMine = scope==='mine';
+  const pageContext = isMine ? 's2' : 's3';
+
+  const trackKey = isMine ? s2Track : s3Track;
+  const selJOId = isMine ? s2JO : s3JO;
+  const trackList = isMine ? myTracksFor(currentUserId) : TRACK_DEFS;
+  const joList = josForTrack(trackKey);
+  const searchId = isMine ? 's2' : 's3';
+  const searchTerm = isMine ? s2SearchTerm : s3SearchTerm;
+  const filteredJoList = joList.filter(j=>{
+    if(!searchTerm) return true;
+    const co = getCompany(j.companyId), ku = getKumiai(co.kumiaiId);
+    const term = searchTerm.toLowerCase();
+    return j.jo.toLowerCase().includes(term) || co.name.toLowerCase().includes(term) || ku.name.toLowerCase().includes(term);
+  });
+
+  const workerRows = filteredJoList.map(j=>{
+    const balls = trackList.map(td=>{
+      const tks = tasksForJO(j.id).filter(t=>t.track===td.key);
+      const st = tks.length ? worstOf(tks) : null;
+      const ring = tks.length && st!=='done' && groupHasRecentActivity(tks);
+      return `<span class="ball ball-md ${st || 'none'} ${ring?'active-ring':''}" style="${st?'':'opacity:.35;'}" title="${td.key}${ring?' · followed up within 7 days':''}"></span>`;
+    }).join('');
+    return `<div class="w-row ${j.id===selJOId?'sel':''}" onclick="${isMine?'selectS2JO':'selectS3JO'}('${j.id}')">
+      <div class="w-top"><div class="wmeta"><div class="wn" onclick="event.stopPropagation(); ${isMine?'openS2Profile':'openS3Profile'}('${j.id}')">JO# ${j.jo}</div></div></div>
+      <div class="wt">${trackKey}<span class="wrecv">${receivingPlainHTML(j.id)}</span></div>
+      <div class="w-balls">${balls}</div>
+    </div>`;
+  }).join('') || `<div class="empty-note" style="padding:15px;">${searchTerm ? 'No Job Orders match your search.' : 'No Job Orders with open items in this track.'}</div>`;
+
+  const col1HTML = `<div class="tri-col col-workers">
+    <div class="tri-hd">Job Orders open in ${trackKey} · ${filteredJoList.length}</div>
+    ${isMine && canManageJOs() ? `<button class="newjo-btn" onclick="openS2Form(null)">+ New Job Order</button><button class="act-btn" style="margin:0 13px 11px;" onclick="openS2Archived()">🗄 View Archived</button>` : ''}
+    <input type="text" id="search-${searchId}" class="search-input" placeholder="🔍 Search JO # or company…" value="${searchTerm}" oninput="onSearchInput(this.value,'${searchId}')">
+    <div class="tri-body">${workerRows}</div>
+  </div>`;
+
+  if(isMine && s2Archived) return navHTML('My Due Gates') + buildArchivedTable();
+  if(isMine && s2Form){
+    return navHTML('My Due Gates') + `<div class="tri" style="margin-top:12px; border-top:1px solid var(--border);">${col1HTML}${buildJOFormPanel(s2Form)}</div>`;
+  }
+
+  const detailId = isMine ? s2Detail : s3Detail;
+  if(detailId){
+    const task = getTaskById(detailId);
+    const cameFromProfile = isMine ? s2Profile : s3Profile;
+    const backFn = isMine ? 'closeS2Detail()' : 'closeS3Detail()';
+    const backLabel = cameFromProfile ? '← Back to JO Profile' : (isMine ? '← Back to My Due Gates' : '← Back to All Due Gates');
+    return navHTML(isMine?'My Due Gates':'All Due Gates') + buildJODetail(task.joId, detailId, backFn, backLabel, pageContext);
+  }
+
+  const profileId = isMine ? s2Profile : s3Profile;
+  if(profileId) return navHTML(isMine?'My Due Gates':'All Due Gates') + buildJOProfile(profileId, pageContext);
+
+  const trackRows = trackList.map(tr=>{
+    const st = worstOf(tasksInTrackAcrossActiveJOs(tr.key)) || 'none';
+    const dotColor = st==='flagged'?'var(--darkred)':st==='pending'?'var(--gold)':st==='done'?'var(--blue)':'#D8DBDE';
+    return `<div class="t-row ${tr.key===trackKey?'sel':''}" onclick="${isMine?'selectS2Track':'selectS3Track'}('${tr.key}')">
+      <span class="tball" style="background:${dotColor}"></span><span class="tname">${tr.name}</span>
+    </div>`;
+  }).join('');
+
+  let checklistHTML = '<div class="tri-body"><div class="empty-note" style="padding:20px;">Select a Job Order to view its checklist.</div></div>';
+  let bottomBar = '';
+  if(selJOId){
+    const jo = getJO(selJOId);
+    const tasks = tasksForJO(selJOId).filter(t=>t.track===trackKey);
+    const doneCount = tasks.filter(t=>t.done).length, total = tasks.length;
+    const pct = total ? Math.round(doneCount/total*100) : 0;
+    const items = tasks.map(t=>{
+      const editable = canEditInContext(t, pageContext);
+      const fu = lastActivityDate(t,'followup');
+      const up = lastActivityDate(t,'upload');
+      const badges = `${fu?`<span class="badge-followup">Followed Up · ${fmtFullDate(fu)}</span>`:''}${up?`<span class="badge-upload">Document Uploaded · ${fmtFullDate(up)}</span>`:''}`;
+      const cbxHTML = isMine
+        ? `<span class="cbx ${t.done?'done':'open'} ${editable?'':'locked'}" onclick="event.stopPropagation();${editable?` toggleTask('${t.id}','${pageContext}')`:''}">${t.done?'✓':''}</span>`
+        : '';
+      return `<div class="check-item" onclick="openDueGatesTaskDetail('${t.id}','${pageContext}')">
+        ${cbxHTML}
+        <div class="ci-body">
+          ${joNametagB3HTML(t.joId, t.track, t.name)}
+          ${badges ? `<div class="ci-badges">${badges}</div>` : ''}
+        </div>
+        ${editable?'':'<span class="lock-ico">🔒</span>'}
+        ${dueBadgeHTML(t)}
+      </div>`;
+    }).join('');
+    checklistHTML = `<div class="check-hd">
+        <div class="cav">${initialsFromName(jo.candidateName)}</div>
+        <div><div class="cn">JO# ${jo.jo}</div><div class="cs">${trackKey}</div><div class="crecv">${receivingHTML(selJOId)} · Target Deploy: <b>${fmtDate(jo.targetDeploymentDate)}</b></div></div>
+        <div class="cring">
+          <div class="gate-ring" style="width:40px;height:40px;background:conic-gradient(var(--blue) 0% ${pct}%, #E5E7EB ${pct}% 100%)"><div class="hole" style="width:28px;height:28px;font-size:10px;">${doneCount}/${total}</div></div>
+          <div style="font-size:11px;font-weight:800;color:var(--ink-soft);">TO DO</div>
+        </div>
+        ${isMine ? `<button class="save-btn" onclick="manualSave()" title="Save manually">💾</button>` : ''}
+      </div><div class="tri-body">${items}</div>`;
+    bottomBar = `<div class="bottom-bar">✓ ${doneCount} of ${total} ${trackKey} items cleared for JO# ${jo.jo} ${!isMine?'<span class="dim">· read-only view</span>':''}</div>`;
+  }
+
+  return navHTML(isMine?'My Due Gates':'All Due Gates') +
+    `<span class="scope-tag">${isMine ? 'Your assigned tasks only' : 'Read-only · every user, all tracks'}</span>
+    <div class="tri" style="margin-top:12px; border-top:1px solid var(--border);">
+      ${col1HTML}
+      <div class="tri-col col-tracks">
+        <div class="tri-hd">${isMine?'Your tracks':'All tracks'} · ${trackList.length}</div>
+        <div class="tri-body">${trackRows}</div>
+      </div>
+      <div class="tri-col col-checklist">${checklistHTML}</div>
+    </div>
+    ${bottomBar}`;
+}
+
+/* ================= SCREEN 4 : CEO Page 1 ================= */
+function buildScreen4(){
+  const filteredKumiai = DB.kumiai.filter(k=> !s4SearchTerm || k.name.toLowerCase().includes(s4SearchTerm.toLowerCase()));
+  const kumiaiRows = [{id:'all', name:'All Kumiai'}].concat(filteredKumiai).map(k=>{
+    const companies = companiesForKumiai(k.id);
+    const jos = companies.flatMap(c=>activeJOsForCompany(c.id));
+    const allTasks = jos.flatMap(j=>tasksForJO(j.id));
+    const st = worstOf(allTasks) || 'none';
+    const dotColor = st==='flagged'?'var(--darkred)':st==='pending'?'var(--gold)':st==='done'?'var(--blue)':'#D8DBDE';
+    return `<div class="kumiai-row ${k.id===s4Kumiai?'sel':''}" onclick="selectS4Kumiai('${k.id}')">
+      <span class="kdot" style="background:${dotColor}"></span>
+      <div class="kbody"><div class="kn">${k.name}</div><div class="ks">${companies.length} compan${companies.length===1?'y':'ies'} · ${jos.length} active JO${jos.length===1?'':'s'}</div></div>
+    </div>`;
+  }).join('') || '<div class="empty-note" style="padding:15px;">No Kumiai match your search.</div>';
+
+  const companies = companiesForKumiai(s4Kumiai);
+  const companyRows = companies.map(co=>{
+    const ku = getKumiai(co.kumiaiId);
+    const jos = activeJOsForCompany(co.id);
+    const cells = TRACK_DEFS.map(tr=>{
+      const tks = jos.flatMap(j=>tasksForJO(j.id)).filter(t=>t.track===tr.key);
+      const st = tks.length ? worstOf(tks) : null;
+      const doneCount = tks.filter(t=>t.done).length;
+      const ring = tks.length && st!=='done' && groupHasRecentActivity(tks);
+      const dotColor = !st ? '#D8DBDE' : st==='flagged'?'var(--darkred)':st==='pending'?'var(--gold)':st==='done'?'var(--blue)':'#D8DBDE';
+      return `<div class="tsc" title="${tr.name}${ring?' · followed up within 7 days':''}">
+        <div class="tscball ${ring?'active-ring':''}" style="background:${dotColor};">${tks.length ? `<div class="tsc-num">${doneCount}</div><div class="tsc-of">of ${tks.length}</div>` : '—'}</div>
+        <div class="tsclabel">${tr.name}</div>
+      </div>`;
+    }).join('');
+    return `<div class="company-row ${s4Company===co.id?'sel':''}" onclick="selectS4Company('${co.id}')">
+      <div class="chead"><span class="cname">${co.name}</span><span class="ctag">${ku.name}</span><span class="cjocount">${jos.length} active JO${jos.length===1?'':'s'}</span></div>
+      <div class="track-summary-grid">${cells}</div>
+    </div>`;
+  }).join('') || '<div class="empty-note" style="padding:20px;">No companies under this Kumiai.</div>';
+
+  let b3HTML = '<div class="tri-body"></div>';
+  if(s4Company){
+    const co = getCompany(s4Company);
+    const jos = activeJOsForCompany(co.id);
+    const rows = jos.map(j=>{
+      const cells = TRACK_DEFS.map(tr=>{
+        const tks = tasksForJO(j.id).filter(t=>t.track===tr.key);
+        const st = tks.length ? worstOf(tks) : null;
+        const doneCount = tks.filter(t=>t.done).length;
+        const ring = tks.length && st!=='done' && groupHasRecentActivity(tks);
+        const dotColor = !st ? '#D8DBDE' : st==='flagged'?'var(--darkred)':st==='pending'?'var(--gold)':st==='done'?'var(--blue)':'#D8DBDE';
+        return `<div class="jo3-tsc" title="${tr.name}${ring?' · followed up within 7 days':''}">
+          <div class="jo3-ball ${ring?'active-ring':''}" style="background:${dotColor};">${tks.length ? `<div class="tsc-num">${doneCount}</div><div class="tsc-of">of ${tks.length}</div>` : '—'}</div>
+          <div class="jo3-lbl">${tr.name}</div>
+        </div>`;
+      }).join('');
+      return `<div class="jo3-row"><div class="jo3-title">JO# ${j.jo}</div><div class="jo3-balls">${cells}</div></div>`;
+    }).join('') || '<div class="empty-note" style="padding:15px;">No active Job Orders for this company.</div>';
+    b3HTML = `<div class="tri-hd">${co.name} · ${jos.length}</div><div class="tri-body">${rows}</div>`;
+  }
+
+  return navHTML('CEO Page') +
+    `<span class="scope-tag">${s4Kumiai==='all'?'All Kumiai':getKumiai(s4Kumiai).name}</span>
+    <div class="tri" style="margin-top:12px; border-top:1px solid var(--border);">
+      <div class="tri-col col-kumiai">
+        <div class="tri-hd">Active Receiving Organizations · <u>${filteredKumiai.length}</u></div>
+        <input type="text" id="search-s4" class="search-input" placeholder="🔍 Search Kumiai…" value="${s4SearchTerm}" oninput="onSearchInput(this.value,'s4')">
+        <div class="tri-body">${kumiaiRows}</div>
+      </div>
+      <div class="tri-col col-companies">
+        <div class="tri-hd">Company Statuses · <u>${companies.length}</u></div>
+        <div class="tri-body">${companyRows}</div>
+      </div>
+      <div class="tri-col col-jolist">${b3HTML}</div>
+    </div>
+    <div class="bottom-bar">${DB.jobOrders.filter(j=>j.active).length} active Job Orders across ${DB.companies.length} companies</div>`;
+}
+
+/* ---------- master render ---------- */
+function renderAllScreens(){
+  document.getElementById('s1-frame').innerHTML = buildScreen1();
+  document.getElementById('s2-frame').innerHTML = buildDueGatesScreen('mine');
+  document.getElementById('s3-frame').innerHTML = buildDueGatesScreen('all');
+  document.getElementById('s4-frame').innerHTML = buildScreen4();
+  if(s4Company){
+    setTimeout(()=>{
+      const el = document.querySelector('#s4-frame .col-jolist');
+      if(el) el.classList.add('open');
+    }, 20);
+  }
+  document.getElementById('dbTag').textContent = `${DB.tasks.length} tasks · ${DB.users.length} users · source: ${SOURCE_LABEL}`;
+}
+
+function populateUserSwitch(){
+  const sel = document.getElementById('userSwitch');
+  sel.innerHTML = DB.users.map(u=>`<option value="${u.id}" ${u.id===currentUserId?'selected':''}>${u.name}${u.role==='CEO'?'':' ('+u.role+')'}</option>`).join('');
+}
+
+/* ---------- init ---------- */
+(async function init(){
+  await reloadFromSource();
+  initSelections();
+  populateUserSwitch();
+  document.getElementById('s1').classList.add('active');
+  renderAllScreens();
+})();
+</script>
+</body>
+</html>
