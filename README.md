@@ -3,6 +3,8 @@
 The Kiroku working-DB UI (`index.html`) loading its data from a Google Sheet
 instead of the browser's built-in seed. Sample data is fictional.
 
+Gsheet masterlist https://docs.google.com/spreadsheets/d/1OcjPALavuFbnMdhoTTRtqppKyK94CIDCWord2Gqi6OA/edit?gid=1926177793#gid=1926177793
+
 ## Files
 
 - `index.html` — Kiroku UI. Data loader at the top of the script (`SHEET_ID`, `SHEET_TABS`).
