@@ -638,6 +638,49 @@ function logActivity(taskId, type, pageContext){
   saveDB();
   renderAllScreens();
 }
+function escHTML(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+/* Log Note popup: small centered modal. Only the assigned user can save. */
+function openNoteModal(taskId, pageContext){
+  const t = DB.tasks.find(x=>x.id===taskId);
+  if(!t || !canEditInContext(t, pageContext)) return;
+  let m = document.getElementById('noteModal');
+  if(!m){
+    m = document.createElement('div');
+    m.id = 'noteModal';
+    m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:1000;padding:16px;';
+    m.innerHTML = `<div style="background:#fff;border-radius:10px;width:400px;max-width:100%;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.25);">
+      <div style="font-weight:800;font-size:15px;margin-bottom:10px;">Log Note</div>
+      <textarea id="noteText" rows="5" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #ccc;border-radius:6px;font:inherit;"></textarea>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+        <button id="noteCancel" class="act-btn" type="button">Cancel</button>
+        <button id="noteSave" class="act-btn primary" type="button">Save Note</button>
+      </div></div>`;
+    document.body.appendChild(m);
+    m.addEventListener('click', e=>{ if(e.target===m) closeNoteModal(); });
+    document.getElementById('noteCancel').onclick = closeNoteModal;
+  }
+  m.dataset.taskId = taskId;
+  m.dataset.ctx = pageContext;
+  document.getElementById('noteText').value = '';
+  document.getElementById('noteSave').onclick = saveNote;
+  m.style.display = 'flex';
+  document.getElementById('noteText').focus();
+}
+function closeNoteModal(){ const m = document.getElementById('noteModal'); if(m) m.style.display = 'none'; }
+function saveNote(){
+  const m = document.getElementById('noteModal');
+  const text = document.getElementById('noteText').value.trim();
+  if(!text){ showToast('Type a note first'); return; }
+  const t = DB.tasks.find(x=>x.id===m.dataset.taskId);
+  if(!t || !canEditInContext(t, m.dataset.ctx)) return;
+  if(!t.activity) t.activity = [];
+  const s = nowStamp();
+  t.activity.push({type:'note', date:s.date, time:s.time, text, user: currentUserId});
+  saveDB();
+  closeNoteModal();
+  renderAllScreens();
+  showToast('✓ Note saved');
+}
 function showToast(msg){
   const el = document.getElementById('toast');
   el.textContent = msg;
@@ -1086,13 +1129,13 @@ function buildJODetail(joId, highlightTaskId, backFn, backLabel, pageContext, pa
       </div>
       <div class="card">
         <div class="card-hd"><span class="t">Notes</span></div>
-        <div class="empty-note">No notes logged for this Job Order in the sample dataset.</div>
+        ${taskActivity.filter(a=>a.type==='note' && a.text).length ? taskActivity.filter(a=>a.type==='note' && a.text).map(a=>`<div class="done-row"><div class="ci-body"><div style="font-size:13px;">${escHTML(a.text)}</div><div class="ci-badges"><span class="badge-followup">${escHTML((getUser(a.user)||{}).name || a.user || '')} · ${fmtStamp(a)}</span></div></div></div>`).join('') : '<div class="empty-note">No notes logged for this task yet.</div>'}
       </div>
       <div class="card">
         <div class="card-hd"><span class="t">Recent Actions</span></div>
         ${taskActivity.length ? taskActivity.map(a=>{
           const meta = ACTION_META[a.type];
-          return `<div class="done-row"><span class="ck" style="color:var(--ink-soft);">${meta.icon}</span><div class="ci-body"><div class="jnt-title" style="font-weight:700;">${meta.label}</div><div class="ci-badges"><span class="badge-followup">${fmtStamp(a)}</span></div></div></div>`;
+          return `<div class="done-row"><span class="ck" style="color:var(--ink-soft);">${meta.icon}</span><div class="ci-body"><div class="jnt-title" style="font-weight:700;">${meta.label}</div>${a.text ? `<div style="font-size:12.5px;margin-top:2px;">${escHTML(a.text)}</div>` : ''}<div class="ci-badges"><span class="badge-followup">${fmtStamp(a)}</span></div></div></div>`;
         }).join('') : '<div class="empty-note">No actions logged for this task yet.</div>'}
       </div>
     </div>
@@ -1113,6 +1156,7 @@ function actionButtonHTML(type, icon, label, task, pageContext){
   if(!editable) return `<button class="act-btn locked" disabled><span class="ico">🔒</span>${label}</button>`;
   // Follow Up stays clickable every time, so each click can add another follow-up.
   if(type!=='followup' && loggedToday(task, type)) return `<button class="act-btn logged-today" disabled><span class="ico">✓</span>${label} logged</button>`;
+  if(type==='note') return `<button class="act-btn" onclick="openNoteModal('${task.id}','${pageContext}')"><span class="ico">${icon}</span>${label}</button>`;
   return `<button class="act-btn" onclick="logActivity('${task.id}','${type}','${pageContext}')"><span class="ico">${icon}</span>${label}</button>`;
 }
 function markDoneButtonHTML(task, pageContext){
