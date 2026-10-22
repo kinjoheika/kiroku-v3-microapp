@@ -532,7 +532,14 @@ function getCompany(id){ return DB.companies.find(c=>c.id===id); }
 function getKumiai(id){ return DB.kumiai.find(k=>k.id===id); }
 function tasksForJO(joId){ return DB.tasks.filter(t=>t.joId===joId); }
 function tasksForUser(uid){ return DB.tasks.filter(t=>getEditor(t)===uid); }
-function activeJOsForCompany(cid){ return DB.jobOrders.filter(j=>j.companyId===cid && j.active); }
+// Job orders from Supabase carry their officer's prefix (u1-j1 belongs to u1).
+// The CEO (u5) sees all; sample job orders without a prefix are shown to everyone.
+function joOwner(jo){ const m = /^(u\d)-/.exec(jo.id); return m ? m[1] : null; }
+function visibleJOs(){
+  if(currentUserId==='u5') return DB.jobOrders;
+  return DB.jobOrders.filter(j=>{ const o = joOwner(j); return !o || o===currentUserId; });
+}
+function activeJOsForCompany(cid){ return visibleJOs().filter(j=>j.companyId===cid && j.active); }
 function companiesForKumiai(kid){ return kid==='all' ? DB.companies : DB.companies.filter(c=>c.kumiaiId===kid); }
 function tasksInTrackAcrossActiveJOs(trackKey){ return DB.tasks.filter(t=>t.track===trackKey && getJO(t.joId).active); }
 function getTaskById(id){ return DB.tasks.find(t=>t.id===id); }
@@ -859,12 +866,12 @@ function deleteJOConfirm(joId){
 /* ---------- selection helpers ---------- */
 function firstJOForTrack(trackKey){
   if(!trackKey) return null;
-  const list = DB.jobOrders.filter(j=>j.active && tasksForJO(j.id).some(t=>t.track===trackKey && !t.done));
+  const list = visibleJOs().filter(j=>j.active && tasksForJO(j.id).some(t=>t.track===trackKey && !t.done));
   return list.length ? list[0].id : (DB.jobOrders.find(j=>j.active)||{}).id || null;
 }
 function josForTrack(trackKey){
   if(!trackKey) return [];
-  return DB.jobOrders.filter(j=>j.active && tasksForJO(j.id).some(t=>t.track===trackKey && !t.done));
+  return visibleJOs().filter(j=>j.active && tasksForJO(j.id).some(t=>t.track===trackKey && !t.done));
 }
 function initSelections(){
   const myTracks = myTracksFor(currentUserId);
@@ -1199,7 +1206,7 @@ function buildJOProfile(joId, pageContext){
 }
 
 function buildArchivedTable(){
-  const archived = DB.jobOrders.filter(j=>!j.active);
+  const archived = visibleJOs().filter(j=>!j.active);
   const rows = archived.map(j=>{
     const co = getCompany(j.companyId), ku = getKumiai(co.kumiaiId);
     return `<tr>
@@ -1461,7 +1468,7 @@ function buildScreen4(){
       </div>
       <div class="tri-col col-jolist">${b3HTML}</div>
     </div>
-    <div class="bottom-bar">${DB.jobOrders.filter(j=>j.active).length} active Job Orders across ${DB.companies.length} companies</div>`;
+    <div class="bottom-bar">${visibleJOs().filter(j=>j.active).length} active Job Orders across ${DB.companies.length} companies</div>`;
 }
 
 /* ---------- master render ---------- */
