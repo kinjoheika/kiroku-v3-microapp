@@ -7,22 +7,21 @@
  * Secrets and sheet IDs go in Project Settings > Script Properties, never in this file:
  *   SUPABASE_URL          https://<project-ref>.supabase.co
  *   SUPABASE_SERVICE_KEY  the service_role key (server-side only; bypasses row security)
- *   SHEET_ID_1 .. SHEET_ID_4   the four spreadsheet IDs (from the sheet URL)
+ *   SHEET_ID_1 .. SHEET_ID_4   the Doc Officer 1..4 sheet IDs (from the sheet URL)
  *
- * Which tabs each sheet provides is set in SOURCES below (tab name -> table name).
+ * Each Doc Officer sheet has the same six tabs. Job order IDs carry the officer's
+ * prefix (u1-j1, u2-j1 ...), so the four sheets never overwrite each other.
  * Run syncAll() manually once, then installTrigger() to run it every 15 minutes.
  */
 
+const TABS = { Users: 'users', Kumiai: 'kumiai', Companies: 'companies',
+               JobOrders: 'job_orders', Tasks: 'tasks', Activity: 'activity' };
+
 const SOURCES = [
-  {
-    key: 'sheet-1',
-    idProp: 'SHEET_ID_1',
-    tabs: { Users: 'users', Kumiai: 'kumiai', Companies: 'companies',
-            JobOrders: 'job_orders', Tasks: 'tasks', Activity: 'activity' },
-  },
-  { key: 'sheet-2', idProp: 'SHEET_ID_2', tabs: {} },   // fill in the tabs this sheet provides
-  { key: 'sheet-3', idProp: 'SHEET_ID_3', tabs: {} },
-  { key: 'sheet-4', idProp: 'SHEET_ID_4', tabs: {} },
+  { key: 'doc-officer-1', idProp: 'SHEET_ID_1', tabs: TABS },
+  { key: 'doc-officer-2', idProp: 'SHEET_ID_2', tabs: TABS },
+  { key: 'doc-officer-3', idProp: 'SHEET_ID_3', tabs: TABS },
+  { key: 'doc-officer-4', idProp: 'SHEET_ID_4', tabs: TABS },
 ];
 
 // Sheet header -> table column, where they differ.
