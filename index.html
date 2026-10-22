@@ -1111,7 +1111,8 @@ function buildJODetail(joId, highlightTaskId, backFn, backLabel, pageContext, pa
 function actionButtonHTML(type, icon, label, task, pageContext){
   const editable = canEditInContext(task, pageContext);
   if(!editable) return `<button class="act-btn locked" disabled><span class="ico">🔒</span>${label}</button>`;
-  if(loggedToday(task, type)) return `<button class="act-btn logged-today" disabled><span class="ico">✓</span>${label} logged</button>`;
+  // Follow Up stays clickable every time, so each click can add another follow-up.
+  if(type!=='followup' && loggedToday(task, type)) return `<button class="act-btn logged-today" disabled><span class="ico">✓</span>${label} logged</button>`;
   return `<button class="act-btn" onclick="logActivity('${task.id}','${type}','${pageContext}')"><span class="ico">${icon}</span>${label}</button>`;
 }
 function markDoneButtonHTML(task, pageContext){
