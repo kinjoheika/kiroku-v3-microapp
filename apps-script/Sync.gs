@@ -50,13 +50,6 @@ function syncAll() {
       payload[table] = readTab(sheetId, tab, table);
     });
 
-    // Keep only this officer's tasks, and the activity that belongs to them.
-    if (payload.tasks) {
-      payload.tasks = payload.tasks.filter(t => t.editor_id === src.owner);
-      const kept = new Set(payload.tasks.map(t => t.task_id));
-      if (payload.activity) payload.activity = payload.activity.filter(a => kept.has(a.task_id));
-    }
-
     const res = UrlFetchApp.fetch(url + '/rest/v1/rpc/sync_import', {
       method: 'post',
       contentType: 'application/json',
@@ -119,4 +112,39 @@ function installTrigger() {
     .filter(t => t.getHandlerFunction() === 'syncAll')
     .forEach(t => ScriptApp.deleteTrigger(t));
   ScriptApp.newTrigger('syncAll').timeBased().everyMinutes(5).create();
+}
+
+// One-time rebuild: copy the full masterlist into each Doc Officer sheet.
+// Each sheet then holds all 8 job orders with 18 steps each. Job order 9 is dropped,
+// and Workers Unite (c5) is set to kumiai k2.
+const MASTERLIST_ID = '1OcjPALavuFbnMdhoTTRtqppKyK94CIDCWord2Gqi6OA';
+
+function rebuildSheetsFromMasterlist() {
+  const master = SpreadsheetApp.openById(MASTERLIST_ID);
+  const tables = {};
+  Object.keys(TABS).forEach(tab => {
+    tables[tab] = master.getSheetByName(tab).getDataRange().getValues();
+  });
+
+  const jobs = tables.JobOrders;
+  tables.JobOrders = [jobs[0]].concat(jobs.slice(1).filter(r => String(r[0]).trim() !== 'j9'));
+
+  const comp = tables.Companies;
+  if (comp.some(r => String(r[0]).trim() === 'c5')) {
+    comp.forEach(r => { if (String(r[0]).trim() === 'c5') r[1] = 'k2'; });
+  } else {
+    comp.push(['c5', 'k2', 'Workers Unite']);
+  }
+
+  const props = PropertiesService.getScriptProperties();
+  SOURCES.forEach(src => {
+    const ss = SpreadsheetApp.openById(props.getProperty(src.idProp));
+    Object.keys(TABS).forEach(tab => {
+      const values = tables[tab];
+      const sh = ss.getSheetByName(tab);
+      sh.clearContents();
+      sh.getRange(1, 1, values.length, values[0].length).setValues(values);
+    });
+    Logger.log(src.key + ': rebuilt');
+  });
 }
