@@ -126,6 +126,20 @@ function rebuildSheetsFromMasterlist() {
     tables[tab] = master.getSheetByName(tab).getDataRange().getValues();
   });
 
+  // Fix a known typo in the masterlist: the last COE step of job order 8 is labeled
+  // j8-COE-2 twice. The second copy is the "Ticket done" step (j8-COE-3).
+  const ih = tables.Tasks[0].indexOf('task_id');
+  let seen = 0;
+  tables.Tasks.slice(1).forEach(r => {
+    if (String(r[ih]).trim() === 'j8-COE-2' && ++seen === 2) {
+      r[ih] = 'j8-COE-3';
+      r[tables.Tasks[0].indexOf('task_name')] = 'Ticket done';
+      r[tables.Tasks[0].indexOf('order')] = 4;
+      r[tables.Tasks[0].indexOf('offset_days')] = -7;
+      r[tables.Tasks[0].indexOf('due_date')] = '2026-09-28';
+    }
+  });
+
   // Fill blank step orders from the same track and task name (the masterlist has a few gaps).
   const t = tables.Tasks;
   const oh = t[0].indexOf('order'), th = t[0].indexOf('track'), nh = t[0].indexOf('task_name');
