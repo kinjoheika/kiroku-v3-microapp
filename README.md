@@ -1,3 +1,11 @@
+## Things To Do
+1. Integrate four Google Sheets into one centralized Supabase database.
+2. Implement event logging and activity tracking from G-sheet to Supabase.
+3. Manage follow-up records efficiently.(everytime that it press can still press it )
+4. Enable messaging and log note functionality.
+5. Support file uploads and management.
+6. 
+   
 # Kiroku — Google Sheet connected demo
 
 The Kiroku working-DB UI (`index.html`) loading its data from a Google Sheet
@@ -68,10 +76,3 @@ Reference page.
 
 Open: http://localhost:8765/config.html
 
-## Things To Do
-1. Integrate four Google Sheets into one centralized Supabase database.
-2. Provide a user-friendly web interface.
-3. Implement event logging and activity tracking.
-4. Manage follow-up records efficiently.
-5. Enable messaging functionality.
-6. Support file uploads and management.
