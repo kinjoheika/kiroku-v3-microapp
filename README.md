@@ -1,10 +1,14 @@
 ## Things To Do
 1. Integrate four Google Sheets into one centralized Supabase database.
 2. Implement event logging and activity tracking from G-sheet to Supabase.
-3. Manage follow-up records efficiently.(everytime that it press can still press it )
+3. Manage follow-up records efficiently.(everytime that it press can still press it)
 4. Enable messaging and log note functionality.
 5. Support file uploads and management.
-6. 
+6. All tracks is under the Job Order (All Due Gates)
+7. Apply circular pagination
+8. Identify the source of the avatar initials
+9. Setting Menu
+10. Improve the user interface and overall design
    
 # Kiroku — Google Sheet connected demo
 
