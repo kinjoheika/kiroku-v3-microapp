@@ -67,3 +67,11 @@ the worksheet) and **Export header CSV**. Lookups and reference values are on th
 Reference page.
 
 Open: http://localhost:8765/config.html
+
+## Things To Do
+1. Integrate four Google Sheets into one centralized Supabase database.
+2. Provide a user-friendly web interface.
+3. Implement event logging and activity tracking.
+4. Manage follow-up records efficiently.
+5. Enable messaging functionality.
+6. Support file uploads and management.
