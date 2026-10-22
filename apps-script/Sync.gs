@@ -17,11 +17,13 @@
 const TABS = { Users: 'users', Kumiai: 'kumiai', Companies: 'companies',
                JobOrders: 'job_orders', Tasks: 'tasks', Activity: 'activity' };
 
+// owner = the editor_id whose tasks this sheet is allowed to import.
+// Each sheet holds a copy of every task, so only the owner's rows are kept.
 const SOURCES = [
-  { key: 'doc-officer-1', idProp: 'SHEET_ID_1', tabs: TABS },
-  { key: 'doc-officer-2', idProp: 'SHEET_ID_2', tabs: TABS },
-  { key: 'doc-officer-3', idProp: 'SHEET_ID_3', tabs: TABS },
-  { key: 'doc-officer-4', idProp: 'SHEET_ID_4', tabs: TABS },
+  { key: 'doc-officer-1', idProp: 'SHEET_ID_1', owner: 'u1', tabs: TABS },
+  { key: 'doc-officer-2', idProp: 'SHEET_ID_2', owner: 'u2', tabs: TABS },
+  { key: 'doc-officer-3', idProp: 'SHEET_ID_3', owner: 'u3', tabs: TABS },
+  { key: 'doc-officer-4', idProp: 'SHEET_ID_4', owner: 'u4', tabs: TABS },
 ];
 
 // Sheet header -> table column, where they differ.
@@ -47,6 +49,13 @@ function syncAll() {
     Object.entries(src.tabs).forEach(([tab, table]) => {
       payload[table] = readTab(sheetId, tab, table);
     });
+
+    // Keep only this officer's tasks, and the activity that belongs to them.
+    if (payload.tasks) {
+      payload.tasks = payload.tasks.filter(t => t.editor_id === src.owner);
+      const kept = new Set(payload.tasks.map(t => t.task_id));
+      if (payload.activity) payload.activity = payload.activity.filter(a => kept.has(a.task_id));
+    }
 
     const res = UrlFetchApp.fetch(url + '/rest/v1/rpc/sync_import', {
       method: 'post',
