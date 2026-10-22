@@ -9,6 +9,15 @@
 8. Identify the source of the avatar initials
 9. Setting Menu
 10. Improve the user interface and overall design
+
+# links for the main pieces:
+Kiroku V4 code (branch): https://github.com/kinjoheika/kiroku-v3-microapp/tree/kiroku-v4-microapp
+Supabase project: https://supabase.com/dashboard/project/epslvipdnpsqgonaxzbd
+Kiroku Sync script (Apps Script): https://script.google.com/home/projects/1rn_tEbYq-Waq3Fs69Nui-zu6_3pNj41kWgmQIqwPqgI1j4JvZskRjDmt/edit
+Doc Officer 1 sheet: https://docs.google.com/spreadsheets/d/14W4LtspvWhmp6dIwtkoWicLy98MO7nmaT5e_nRpXbgs/edit
+Doc Officer 2 sheet: https://docs.google.com/spreadsheets/d/1mBsENuWFOYi45mILo7Za_5HIqFvwNzsR9eidq7gsAno/edit
+Doc Officer 3 sheet: https://docs.google.com/spreadsheets/d/12k81jEyzBj1osoxxQ9XfSe2PZoDQr-b5qPU2sNeyX7M/edit
+Doc Officer 4 sheet: https://docs.google.com/spreadsheets/d/1edyDABJKPno_hHU73POsNI6T5cjD4PBtCZ6xUkZonTE/edit
    
 # Kiroku — Google Sheet connected demo
 
