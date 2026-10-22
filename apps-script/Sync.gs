@@ -126,6 +126,13 @@ function rebuildSheetsFromMasterlist() {
     tables[tab] = master.getSheetByName(tab).getDataRange().getValues();
   });
 
+  // Fill blank step orders from the same track and task name (the masterlist has a few gaps).
+  const t = tables.Tasks;
+  const oh = t[0].indexOf('order'), th = t[0].indexOf('track'), nh = t[0].indexOf('task_name');
+  const knownOrder = {};
+  t.slice(1).forEach(r => { if (r[oh] !== '') knownOrder[r[th] + '|' + r[nh]] = r[oh]; });
+  t.slice(1).forEach(r => { if (r[oh] === '') r[oh] = knownOrder[r[th] + '|' + r[nh]] || ''; });
+
   const jobs = tables.JobOrders;
   tables.JobOrders = [jobs[0]].concat(jobs.slice(1).filter(r => String(r[0]).trim() !== 'j9'));
 
