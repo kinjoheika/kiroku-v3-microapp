@@ -112,6 +112,11 @@ function cell(v, header) {
   return v;
 }
 
+// Run once: replaces any existing sync schedule with one that runs every 5 minutes.
+// Google Apps Script allows only 1, 5, 10, 15 or 30 minutes.
 function installTrigger() {
-  ScriptApp.newTrigger('syncAll').timeBased().everyMinutes(15).create();
+  ScriptApp.getProjectTriggers()
+    .filter(t => t.getHandlerFunction() === 'syncAll')
+    .forEach(t => ScriptApp.deleteTrigger(t));
+  ScriptApp.newTrigger('syncAll').timeBased().everyMinutes(5).create();
 }
