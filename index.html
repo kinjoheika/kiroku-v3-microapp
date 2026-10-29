@@ -1639,7 +1639,7 @@ function updateConfigTable(){
       <td>${escHTML(e.description)}${change}${rec}</td>
       <td><span class="cfg-status ${cls}">${escHTML(e.sync_status)}</span></td>
     </tr>`;
-  }).join('') : `<tr><td colspan="7" class="empty-note">${EVENT_LOGS.length ? 'No events match these filters.' : 'No events yet. Changes appear here after the next sync.'}</td></tr>`;
+  }).join('') : `<tr><td colspan="7" class="empty-note">${EVENT_LOGS.length ? 'No sync records match these filters.' : 'No sync records yet. Changes appear here after the next sync.'}</td></tr>`;
 }
 
 function populateUserSwitch(){
