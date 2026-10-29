@@ -1567,7 +1567,7 @@ function renderAllScreens(){
 
 /* ---------- Configuration: event logs ---------- */
 let EVENT_LOGS = null;               // null = not loaded from Supabase (sheet / CSV mode)
-const cfgFilter = {q:'', from:'', to:'', user:'', source:'', module:'', action:'', status:''};
+const cfgFilter = {q:'', module:'', action:'', status:''};
 
 async function fetchEventLogs(){
   const res = await fetch(`${SUPABASE_URL}/rest/v1/event_logs?select=*&order=event_at.desc&limit=500`, {
@@ -1578,18 +1578,10 @@ async function fetchEventLogs(){
 function fmtManila(iso){
   return new Date(iso).toLocaleString('en-US', {timeZone:'Asia/Manila', month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'});
 }
-function manilaDay(iso){
-  return new Date(iso).toLocaleDateString('en-CA', {timeZone:'Asia/Manila'});   // YYYY-MM-DD
-}
 function eventUser(e){ return e.user_name || (e.source==='Google Sheets' ? 'Not identified' : 'System'); }
 function filteredEvents(){
   const f = cfgFilter, q = f.q.trim().toLowerCase();
   return EVENT_LOGS.filter(e=>{
-    const day = manilaDay(e.event_at);
-    if(f.from && day < f.from) return false;
-    if(f.to && day > f.to) return false;
-    if(f.user && eventUser(e) !== f.user) return false;
-    if(f.source && e.source !== f.source) return false;
     if(f.module && e.module !== f.module) return false;
     if(f.action && e.action !== f.action) return false;
     if(f.status && e.sync_status !== f.status) return false;
@@ -1606,7 +1598,6 @@ function buildConfigScreen(){
   const head = navHTML('Configuration');
   if(EVENT_LOGS===null) return head + `<div class="cfg-wrap"><div class="empty-note">Event logs are only available when Kiroku loads from Supabase. Reload after the sync has run.</div></div>`;
   const opts = (arr, cur, all) => `<option value="">${all}</option>` + arr.map(v=>`<option value="${escHTML(v)}" ${v===cur?'selected':''}>${escHTML(v)}</option>`).join('');
-  const users = [...new Set(EVENT_LOGS.map(eventUser))].sort();
   const actions = [...new Set(EVENT_LOGS.map(e=>e.action))].sort();
   const f = cfgFilter;
   return head + `<div class="cfg-wrap">
@@ -1616,10 +1607,6 @@ function buildConfigScreen(){
     </div>
     <div class="cfg-filters">
       <input class="cfg-input cfg-search" placeholder="Search description, record ID or value" value="${escHTML(f.q)}" oninput="cfgSet('q', this.value)">
-      <input class="cfg-input" type="date" title="From date" value="${f.from}" onchange="cfgSet('from', this.value)">
-      <input class="cfg-input" type="date" title="To date" value="${f.to}" onchange="cfgSet('to', this.value)">
-      <select class="cfg-input" onchange="cfgSet('user', this.value)">${opts(users, f.user, 'All users')}</select>
-      <select class="cfg-input" onchange="cfgSet('source', this.value)">${opts(['Google Sheets','Kiroku','Supabase'], f.source, 'All sources')}</select>
       <select class="cfg-input" onchange="cfgSet('module', this.value)">${opts(['Users','Companies','Job Orders','Tasks','Activity','Sync'], f.module, 'All modules')}</select>
       <select class="cfg-input" onchange="cfgSet('action', this.value)">${opts(actions, f.action, 'All actions')}</select>
       <select class="cfg-input" onchange="cfgSet('status', this.value)">${opts(['Success','Failed','Pending'], f.status, 'All statuses')}</select>
