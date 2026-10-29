@@ -1001,8 +1001,9 @@ function buildScreen1(){
   if(s1Detail){
     const task = getTaskById(s1Detail);
     const idx = myAllSorted.findIndex(t=>t.id===s1Detail);
-    const prevTask = idx>0 ? myAllSorted[idx-1] : null;
-    const nextTask = (idx>=0 && idx<myAllSorted.length-1) ? myAllSorted[idx+1] : null;
+    const len = myAllSorted.length;
+    const prevTask = (idx>=0 && len>1) ? myAllSorted[(idx-1+len)%len] : null;
+    const nextTask = (idx>=0 && len>1) ? myAllSorted[(idx+1)%len] : null;
     const pagerHTML = `<span class="task-pager">
       <button class="pager-btn" ${prevTask?`onclick="openTaskDetail('${prevTask.id}')"`:'disabled'}>◀</button>
       <span class="pager-lbl">${idx+1}/${myAllSorted.length}</span>
