@@ -52,6 +52,9 @@ begin
         p_entity, cols) using r;
       insert into public.event_log (actor, action, entity, record_id, source_sheet, sync_run_id)
         values ('sheet-sync', 'created', p_entity, k, p_source, p_run);
+      insert into public.event_logs (event_type, source, action, module, record_id, description, source_sheet)
+        values ('Record Created', 'Google Sheets', 'Create', initcap(replace(p_entity, '_', ' ')), k,
+                initcap(replace(p_entity, '_', ' ')) || ' record added', p_source);
       n_ins := n_ins + 1;
     else
       changed := false;
@@ -60,6 +63,11 @@ begin
           insert into public.event_log
             (actor, action, entity, record_id, field, old_value, new_value, source_sheet, sync_run_id)
           values ('sheet-sync', 'updated', p_entity, k, f, old_row->>f, norm->>f, p_source, p_run);
+          insert into public.event_logs
+            (event_type, source, action, module, record_id, field_changed, old_value, new_value, description, source_sheet)
+          values ('Record Updated', 'Google Sheets', 'Update', initcap(replace(p_entity, '_', ' ')), k,
+                  initcap(replace(f, '_', ' ')), old_row->>f, norm->>f,
+                  initcap(replace(f, '_', ' ')) || ' updated', p_source);
           changed := true;
         end if;
       end loop;
@@ -110,6 +118,13 @@ begin
     where run_id = v_run;
   insert into public.event_log (actor, action, entity, source_sheet, sync_run_id, new_value)
     values ('sheet-sync', 'sync_completed', 'sync_run', p_source, v_run, res::text);
+
+  -- Only log a sync when something changed, so the page is not flooded every 5 minutes.
+  if exists (select 1 from jsonb_each(res) e
+             where (e.value->>'inserted')::int + (e.value->>'updated')::int > 0) then
+    insert into public.event_logs (event_type, source, action, module, description, source_sheet)
+      values ('Sync Completed', 'Google Sheets', 'Sync', 'Sync', 'Sheet changes synced to Supabase', p_source);
+  end if;
 
   return jsonb_build_object('run_id', v_run, 'counts', res);
 end $$;

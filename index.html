@@ -107,12 +107,12 @@ table.jo-table td.actions{display:flex; gap:6px; flex-wrap:wrap;}
 .stat-chip.c-blue .sv{color:var(--blue);}
 .stat-chip.c-gold .sv{color:var(--gold-ink);}
 
-.card{background:#fff; border:1px solid var(--border); border-radius:var(--r); overflow:hidden; margin-bottom:15px;}
+.card{background:#fff; border:1px solid var(--border); border-radius:var(--r); overflow:hidden; margin-bottom:12px;}
 .dual-card-row{display:flex; gap:15px; align-items:flex-start;}
 .dual-card-row .card{flex:1; min-width:0;}
-.card-hd{padding:13px 17px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:#FAFAFB;}
+.card-hd{padding:10px 15px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:#FAFAFB;}
 .card-hd .t{font-family:var(--font-head); font-size:12.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft);}
-.done-row{padding:9px 17px; border-bottom:1px solid #F1F3F4; display:flex; align-items:flex-start; gap:9px; font-size:13px;}
+.done-row{padding:7px 15px; border-bottom:1px solid #F1F3F4; display:flex; align-items:flex-start; gap:9px; font-size:13px;}
 .done-row .ck{margin-top:2px;}
 .done-row:last-child{border-bottom:none;}
 .done-row .ck{color:var(--blue); font-weight:800;}
@@ -125,12 +125,12 @@ table.jo-table td.actions{display:flex; gap:6px; flex-wrap:wrap;}
 .pager-btn:hover:not(:disabled){background:var(--darkred-light); border-color:var(--darkred);}
 .pager-btn:disabled{opacity:.3; cursor:not-allowed;}
 .pager-lbl{font-size:12px; color:var(--ink-soft); font-weight:700; white-space:nowrap;}
-.task-hero{background:var(--darkred-light); border-radius:var(--r); padding:15px 17px; display:flex; align-items:center; gap:13px; margin-bottom:17px; border:1px solid #EAD0D3;}
+.task-hero{background:var(--darkred-light); border-radius:var(--r); padding:11px 15px; display:flex; align-items:center; gap:12px; margin-bottom:12px; border:1px solid #EAD0D3;}
 .task-hero .av{width:40px;height:40px;border-radius:50%;background:var(--darkred);color:#fff;font-family:var(--font-head);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .task-hero .n{font-family:var(--font-head); font-weight:700; font-size:15px;}
 .task-hero .s{font-size:12.5px; color:var(--darkred);}
-.task-title{font-family:var(--font-head); font-size:21px; font-weight:700; margin-bottom:13px;}
-.meta-row{display:flex; gap:28px; padding:13px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:15px; font-size:13.5px; flex-wrap:wrap;}
+.task-title{font-family:var(--font-head); font-size:20px; font-weight:700; margin-bottom:9px;}
+.meta-row{display:flex; gap:24px; padding:9px 0; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:12px; font-size:13px; flex-wrap:wrap;}
 .meta-row .m-lbl{font-size:10.5px; font-weight:800; letter-spacing:.05em; color:var(--ink-soft); text-transform:uppercase; display:block; margin-bottom:3px;}
 .meta-row .overdue{color:var(--darkred); font-weight:700;}
 .due-badge{font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:var(--r); white-space:nowrap; border:1px solid transparent;}
@@ -140,7 +140,7 @@ table.jo-table td.actions{display:flex; gap:6px; flex-wrap:wrap;}
 .due-badge.done{background:var(--blue-light); color:var(--blue); border-color:#CFDDEE;}
 
 .action-label{font-size:11.5px; font-weight:800; letter-spacing:.06em; color:var(--ink-soft); text-transform:uppercase; margin-bottom:9px;}
-.action-row{display:flex; gap:8px; margin-bottom:19px; flex-wrap:wrap;}
+.action-row{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
 .act-btn{display:inline-flex; align-items:center; gap:6px; background:#fff; border:1.5px solid var(--border); border-radius:var(--r); padding:8px 13px; font-family:var(--font-body); font-weight:700; font-size:12.5px; color:var(--ink); cursor:pointer;}
 .newjo-btn{margin:11px 13px 8px; width:calc(100% - 26px); background:var(--darkred); color:#fff; border:none; border-radius:var(--r); padding:9px 0; font-weight:700; font-size:13px; cursor:pointer; font-family:var(--font-body);}
 .newjo-btn:hover{background:#631a24;}
@@ -178,12 +178,37 @@ table.jo-table td.actions{display:flex; gap:6px; flex-wrap:wrap;}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--black);color:var(--gold);padding:10px 18px;border-radius:var(--r);font-size:13px;font-weight:700;opacity:0;transform:translateY(8px);transition:opacity .25s, transform .25s;pointer-events:none;z-index:999;}
 .toast.show{opacity:1;transform:translateY(0);}
 
+.cfg-wrap{padding:14px 22px 18px;}
+.cfg-hd{display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:10px;}
+.cfg-title{font-family:var(--font-head); font-size:18px; font-weight:800;}
+.cfg-sub{font-size:12.5px; color:var(--ink-soft); margin-top:2px;}
+.cfg-count{font-size:12px; font-weight:700; color:var(--ink-soft);}
+.cfg-filters{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:10px;}
+.cfg-input{border:1px solid var(--border); border-radius:var(--r); padding:6px 9px; font-size:12.5px; font-family:var(--font-body); background:#fff; color:var(--ink);}
+.cfg-input:focus{outline:none; border-color:var(--darkred);}
+.cfg-search{min-width:230px; flex:1;}
+.cfg-clear{border:1px solid var(--darkred); background:#fff; color:var(--darkred); font-weight:700; font-size:12px; padding:6px 11px; border-radius:var(--r); cursor:pointer; font-family:var(--font-body);}
+.cfg-clear:hover{background:var(--darkred-light);}
+.cfg-table-wrap{max-height:560px; overflow:auto; border:1px solid var(--border); border-radius:var(--r); overscroll-behavior:contain;}
+.cfg-table{width:100%; border-collapse:collapse; font-size:12.5px; min-width:820px;}
+.cfg-table th{position:sticky; top:0; z-index:1; background:#FAFAFB; text-align:left; font-size:10.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft); padding:8px 10px; border-bottom:1px solid var(--border);}
+.cfg-table td{padding:7px 10px; border-bottom:1px solid #F1F3F4; vertical-align:top;}
+.cfg-table tbody tr:hover td{background:#FAFAFB;}
+.cfg-time{white-space:nowrap; font-weight:600;}
+.cfg-change{font-size:11.5px; color:var(--ink-soft); margin-top:2px;}
+.cfg-rec{font-size:11px; color:var(--ink-soft); margin-top:1px; font-family:Consolas, monospace;}
+.cfg-status{display:inline-block; font-size:11px; font-weight:800; padding:2px 8px; border-radius:var(--r); border:1px solid; white-space:nowrap;}
+.cfg-status.ok{background:var(--green-light); color:var(--green); border-color:#C7E5D0;}
+.cfg-status.bad{background:var(--darkred-light); color:var(--darkred); border-color:#EAD0D3;}
+.cfg-status.pend{background:var(--gold-light); color:var(--gold-ink); border-color:#EFDFAE;}
+
 .gate-ring-wrap{display:flex;align-items:center;gap:11px;padding:15px 17px;border-bottom:1px solid var(--border); flex-shrink:0;}
 .gate-ring-wrap .save-btn{margin-left:auto;}
 .gate-list-scroll{flex:1; overflow-y:auto; min-height:0;}
 .gate-ring{width:46px;height:46px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
 .gate-ring .hole{width:32px;height:32px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--ink);}
-.gate-row{display:flex; align-items:center; gap:10px; padding:10px 17px; border-bottom:1px solid #F1F3F4; cursor:pointer;}
+.gate-row{display:flex; align-items:center; gap:10px; padding:8px 15px; border-bottom:1px solid #F1F3F4; cursor:pointer;}
+.gate-row.overdue{box-shadow:inset 3px 0 0 var(--darkred);}
 .gate-row:hover{background:#FAFAFB;}
 .gate-row.current{background:var(--gold-light);}
 .gate-row.locked{cursor:default;}
@@ -318,6 +343,11 @@ table.jo-table td.actions{display:flex; gap:6px; flex-wrap:wrap;}
 <!-- SCREEN 4: CEO Page (Template B, summarized, with sliding B3 Active Job Orders panel) -->
 <div id="s4" class="screen">
   <div class="app-frame" id="s4-frame"></div>
+</div>
+
+<!-- SCREEN 5: Configuration (Event Logs) -->
+<div id="s5" class="screen">
+  <div class="app-frame" id="s5-frame"></div>
 </div>
 
 <div id="toast" class="toast"></div>
@@ -607,8 +637,8 @@ function canEditInContext(task, pageContext){
   return getEditor(task) === user.id;
 }
 function tabsFor(user){
-  if(isCEO(user)) return [{id:'s4', label:'CEO Page'}, {id:'s3', label:'All Due Gates'}];
-  return [{id:'s1', label:'My Tasks'}, {id:'s2', label:'My Due Gates'}, {id:'s3', label:'All Due Gates'}];
+  if(isCEO(user)) return [{id:'s4', label:'CEO Page'}, {id:'s3', label:'All Due Gates'}, {id:'s5', label:'Configuration'}];
+  return [{id:'s1', label:'My Tasks'}, {id:'s2', label:'My Due Gates'}, {id:'s3', label:'All Due Gates'}, {id:'s5', label:'Configuration'}];
 }
 function myTracksFor(userId){
   return TRACK_DEFS.filter(td => TASKS_CONFIG[td.key].some(cfg => cfg.editor===userId));
@@ -792,9 +822,11 @@ async function loadFromSupabase(){
   if(entries.some(([,objs])=>objs.length===0)) return null;   // not synced yet: use the Sheet / CSV
   const db = buildDBFromTabs(Object.fromEntries(entries.map(([tab, objs])=>[tab, supaToRows(tab, objs)])));
   SOURCE_LABEL = 'Supabase (kiroku)';
+  EVENT_LOGS = await fetchEventLogs().catch(e=>{ console.warn('event_logs load failed:', e); return null; });
   return db;
 }
 async function loadFromSource(){
+  EVENT_LOGS = null;
   try {
     const db = await loadFromSupabase();
     if(db) return db;
@@ -1006,7 +1038,7 @@ function buildScreen1(){
     const nextTask = (idx>=0 && len>1) ? myAllSorted[(idx+1)%len] : null;
     const pagerHTML = `<span class="task-pager">
       <button class="pager-btn" ${prevTask?`onclick="openTaskDetail('${prevTask.id}')"`:'disabled'}>◀</button>
-      <span class="pager-lbl">${idx+1}/${myAllSorted.length}</span>
+      <span class="pager-lbl">Task ${idx+1}/${myAllSorted.length}</span>
       <button class="pager-btn" ${nextTask?`onclick="openTaskDetail('${nextTask.id}')"`:'disabled'}>▶</button>
     </span>`;
     body = buildJODetail(task.joId, s1Detail, 'closeTaskDetail()', '← Back to My Tasks', 's1', pagerHTML);
@@ -1095,10 +1127,10 @@ function buildJODetail(joId, highlightTaskId, backFn, backLabel, pageContext, pa
     const st = computeStatus(t);
     const isCurrent = current && t.id===current.id;
     const editable = canEditInContext(t, pageContext);
-    return `<div class="gate-row ${isCurrent?'current':''}" onclick="openDetailFor('${t.id}','${pageContext}')">
+    return `<div class="gate-row ${isCurrent?'current':''} ${st==='flagged'?'overdue':''}" onclick="openDetailFor('${t.id}','${pageContext}')">
       <span class="ball ${st} ${editable?'':'locked'}" onclick="event.stopPropagation();${editable?` toggleTask('${t.id}','${pageContext}')`:''}"></span>
       <span class="gn">${t.name} <span style="color:var(--ink-soft); font-weight:400;">· ${t.track}</span></span>
-      ${editable?'':'<span class="lock-ico">🔒</span>'}
+      ${editable?'':'<span class="lock-ico" title="Locked: only the assigned officer can change this gate">🔒</span>'}
       ${dueBadgeHTML(t)}
     </div>`;
   }).join('');
@@ -1116,7 +1148,6 @@ function buildJODetail(joId, highlightTaskId, backFn, backLabel, pageContext, pa
       <div class="task-title">${current ? current.name : 'Job Order Gate Checklist'}</div>
       <div class="meta-row">
         ${current ? `<div><span class="m-lbl">Due</span>${fmtDate(current.due)}</div>` : ''}
-        <div><span class="m-lbl">Gates cleared</span>${doneCount} of ${total}</div>
         <div><span class="m-lbl">Overall status</span><span class="${worst==='flagged'?'overdue':''}">${worst==='flagged'?'Overdue items present':worst==='pending'?'Due soon':worst==='done'?'All clear':'On track'}</span></div>
       </div>
       <div class="action-label">Log Actions</div>
@@ -1149,7 +1180,7 @@ function buildJODetail(joId, highlightTaskId, backFn, backLabel, pageContext, pa
       <div class="gate-list-scroll">${gateRows}</div>
     </div>
   </div>
-  <div class="bottom-bar">✓ ${doneCount} of ${total} gates cleared for JO# ${jo.jo}</div>`;
+  `;
 }
 
 function actionButtonHTML(type, icon, label, task, pageContext){
@@ -1523,6 +1554,8 @@ function renderAllScreens(){
   document.getElementById('s2-frame').innerHTML = buildDueGatesScreen('mine');
   document.getElementById('s3-frame').innerHTML = buildDueGatesScreen('all');
   document.getElementById('s4-frame').innerHTML = buildScreen4();
+  document.getElementById('s5-frame').innerHTML = buildConfigScreen();
+  updateConfigTable();
   if(s4Company){
     setTimeout(()=>{
       const el = document.querySelector('#s4-frame .col-jolist');
@@ -1530,6 +1563,95 @@ function renderAllScreens(){
     }, 20);
   }
   document.getElementById('dbTag').textContent = `${DB.tasks.length} tasks · ${DB.users.length} users · source: ${SOURCE_LABEL}`;
+}
+
+/* ---------- Configuration: event logs ---------- */
+let EVENT_LOGS = null;               // null = not loaded from Supabase (sheet / CSV mode)
+const cfgFilter = {q:'', from:'', to:'', user:'', source:'', module:'', action:'', status:''};
+
+async function fetchEventLogs(){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/event_logs?select=*&order=event_at.desc&limit=500`, {
+    headers:{apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`}, cache:'no-store'});
+  if(!res.ok) throw new Error(`event_logs: HTTP ${res.status}`);
+  return res.json();
+}
+function fmtManila(iso){
+  return new Date(iso).toLocaleString('en-US', {timeZone:'Asia/Manila', month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'});
+}
+function manilaDay(iso){
+  return new Date(iso).toLocaleDateString('en-CA', {timeZone:'Asia/Manila'});   // YYYY-MM-DD
+}
+function eventUser(e){ return e.user_name || (e.source==='Google Sheets' ? 'Not identified' : 'System'); }
+function filteredEvents(){
+  const f = cfgFilter, q = f.q.trim().toLowerCase();
+  return EVENT_LOGS.filter(e=>{
+    const day = manilaDay(e.event_at);
+    if(f.from && day < f.from) return false;
+    if(f.to && day > f.to) return false;
+    if(f.user && eventUser(e) !== f.user) return false;
+    if(f.source && e.source !== f.source) return false;
+    if(f.module && e.module !== f.module) return false;
+    if(f.action && e.action !== f.action) return false;
+    if(f.status && e.sync_status !== f.status) return false;
+    if(q){
+      const hay = [e.description, e.record_id, e.field_changed, e.old_value, e.new_value, eventUser(e)].join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+function cfgSet(key, value){ cfgFilter[key] = value; updateConfigTable(); }
+function cfgClear(){ Object.keys(cfgFilter).forEach(k=>cfgFilter[k]=''); renderAllScreens(); }
+function buildConfigScreen(){
+  const head = navHTML('Configuration');
+  if(EVENT_LOGS===null) return head + `<div class="cfg-wrap"><div class="empty-note">Event logs are only available when Kiroku loads from Supabase. Reload after the sync has run.</div></div>`;
+  const opts = (arr, cur, all) => `<option value="">${all}</option>` + arr.map(v=>`<option value="${escHTML(v)}" ${v===cur?'selected':''}>${escHTML(v)}</option>`).join('');
+  const users = [...new Set(EVENT_LOGS.map(eventUser))].sort();
+  const actions = [...new Set(EVENT_LOGS.map(e=>e.action))].sort();
+  const f = cfgFilter;
+  return head + `<div class="cfg-wrap">
+    <div class="cfg-hd">
+      <div><div class="cfg-title">Event Logs</div><div class="cfg-sub">Every recorded change and activity, newest first. Times are Philippine time.</div></div>
+      <div class="cfg-count" id="cfgCount"></div>
+    </div>
+    <div class="cfg-filters">
+      <input class="cfg-input cfg-search" placeholder="Search description, record ID or value" value="${escHTML(f.q)}" oninput="cfgSet('q', this.value)">
+      <input class="cfg-input" type="date" title="From date" value="${f.from}" onchange="cfgSet('from', this.value)">
+      <input class="cfg-input" type="date" title="To date" value="${f.to}" onchange="cfgSet('to', this.value)">
+      <select class="cfg-input" onchange="cfgSet('user', this.value)">${opts(users, f.user, 'All users')}</select>
+      <select class="cfg-input" onchange="cfgSet('source', this.value)">${opts(['Google Sheets','Kiroku','Supabase'], f.source, 'All sources')}</select>
+      <select class="cfg-input" onchange="cfgSet('module', this.value)">${opts(['Users','Companies','Job Orders','Tasks','Activity','Sync'], f.module, 'All modules')}</select>
+      <select class="cfg-input" onchange="cfgSet('action', this.value)">${opts(actions, f.action, 'All actions')}</select>
+      <select class="cfg-input" onchange="cfgSet('status', this.value)">${opts(['Success','Failed','Pending'], f.status, 'All statuses')}</select>
+      <button class="cfg-clear" onclick="cfgClear()">Clear filters</button>
+    </div>
+    <div class="cfg-table-wrap">
+      <table class="cfg-table">
+        <thead><tr><th>Date &amp; time</th><th>User</th><th>Source</th><th>Module</th><th>Action</th><th>Description</th><th>Status</th></tr></thead>
+        <tbody id="cfgBody"></tbody>
+      </table>
+    </div>
+  </div>`;
+}
+function updateConfigTable(){
+  const body = document.getElementById('cfgBody');
+  if(!body || EVENT_LOGS===null) return;
+  const rows = filteredEvents();
+  document.getElementById('cfgCount').textContent = `${rows.length} of ${EVENT_LOGS.length} shown`;
+  body.innerHTML = rows.length ? rows.map(e=>{
+    const cls = e.sync_status==='Success' ? 'ok' : e.sync_status==='Failed' ? 'bad' : 'pend';
+    const change = e.field_changed ? `<div class="cfg-change">${escHTML(e.field_changed)}: ${escHTML(e.old_value ?? '')} → ${escHTML(e.new_value ?? '')}</div>` : '';
+    const rec = e.record_id ? `<div class="cfg-rec">${escHTML(e.record_id)}</div>` : '';
+    return `<tr>
+      <td class="cfg-time">${fmtManila(e.event_at)}</td>
+      <td>${escHTML(eventUser(e))}</td>
+      <td>${escHTML(e.source)}</td>
+      <td>${escHTML(e.module)}</td>
+      <td>${escHTML(e.action)}</td>
+      <td>${escHTML(e.description)}${change}${rec}</td>
+      <td><span class="cfg-status ${cls}">${escHTML(e.sync_status)}</span></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="7" class="empty-note">${EVENT_LOGS.length ? 'No events match these filters.' : 'No events yet. Changes appear here after the next sync.'}</td></tr>`;
 }
 
 function populateUserSwitch(){

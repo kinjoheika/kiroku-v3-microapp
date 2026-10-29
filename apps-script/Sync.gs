@@ -46,9 +46,14 @@ function syncAll() {
       return;
     }
     const payload = {};
-    Object.entries(src.tabs).forEach(([tab, table]) => {
-      payload[table] = readTab(sheetId, tab, table);
-    });
+    try {
+      Object.entries(src.tabs).forEach(([tab, table]) => {
+        payload[table] = readTab(sheetId, tab, table);
+      });
+    } catch (err) {
+      logSyncFailure(url, key, src.key, err);
+      throw err;
+    }
 
     const res = UrlFetchApp.fetch(url + '/rest/v1/rpc/sync_import', {
       method: 'post',
@@ -58,10 +63,31 @@ function syncAll() {
       muteHttpExceptions: true,
     });
     if (res.getResponseCode() >= 300) {
+      logSyncFailure(url, key, src.key, res.getContentText());
       throw new Error(src.key + ' failed: ' + res.getContentText());
     }
     Logger.log(src.key + ': ' + res.getContentText());
   });
+}
+
+// Writes one 'Sync Failed' row to event_logs. It never throws, so the original error still shows.
+function logSyncFailure(url, key, sourceKey, message) {
+  try {
+    UrlFetchApp.fetch(url + '/rest/v1/event_logs', {
+      method: 'post',
+      contentType: 'application/json',
+      headers: { apikey: key, Authorization: 'Bearer ' + key, Prefer: 'return=minimal' },
+      payload: JSON.stringify({
+        event_type: 'Sync Failed', source: 'Google Sheets', action: 'Sync', module: 'Sync',
+        description: 'Sync from ' + sourceKey + ' failed',
+        new_value: String(message).slice(0, 500),
+        sync_status: 'Failed', source_sheet: sourceKey,
+      }),
+      muteHttpExceptions: true,
+    });
+  } catch (e) {
+    Logger.log('could not write sync failure log: ' + e);
+  }
 }
 
 function readTab(sheetId, tab, table) {
