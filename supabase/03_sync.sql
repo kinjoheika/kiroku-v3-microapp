@@ -52,7 +52,7 @@ begin
         p_entity, cols) using r;
       insert into public.event_log (actor, action, entity, record_id, source_sheet, sync_run_id)
         values ('sheet-sync', 'created', p_entity, k, p_source, p_run);
-      insert into public.event_logs (event_type, source, action, module, record_id, description, source_sheet)
+      insert into public.sync_logs (event_type, source, action, module, record_id, description, source_sheet)
         values ('Record Created', 'Google Sheets', 'Create', initcap(replace(p_entity, '_', ' ')), k,
                 initcap(replace(p_entity, '_', ' ')) || ' record added', p_source);
       n_ins := n_ins + 1;
@@ -63,7 +63,7 @@ begin
           insert into public.event_log
             (actor, action, entity, record_id, field, old_value, new_value, source_sheet, sync_run_id)
           values ('sheet-sync', 'updated', p_entity, k, f, old_row->>f, norm->>f, p_source, p_run);
-          insert into public.event_logs
+          insert into public.sync_logs
             (event_type, source, action, module, record_id, field_changed, old_value, new_value, description, source_sheet)
           values ('Record Updated', 'Google Sheets', 'Update', initcap(replace(p_entity, '_', ' ')), k,
                   initcap(replace(f, '_', ' ')), old_row->>f, norm->>f,
@@ -122,7 +122,7 @@ begin
   -- Only log a sync when something changed, so the page is not flooded every 5 minutes.
   if exists (select 1 from jsonb_each(res) e
              where (e.value->>'inserted')::int + (e.value->>'updated')::int > 0) then
-    insert into public.event_logs (event_type, source, action, module, description, source_sheet)
+    insert into public.sync_logs (event_type, source, action, module, description, source_sheet)
       values ('Sync Completed', 'Google Sheets', 'Sync', 'Sync', 'Sheet changes synced to Supabase', p_source);
   end if;
 

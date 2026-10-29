@@ -190,7 +190,8 @@ table.jo-table td.actions{display:flex; gap:6px; flex-wrap:wrap;}
 .cfg-clear{border:1px solid var(--darkred); background:#fff; color:var(--darkred); font-weight:700; font-size:12px; padding:6px 11px; border-radius:var(--r); cursor:pointer; font-family:var(--font-body);}
 .cfg-clear:hover{background:var(--darkred-light);}
 .cfg-table-wrap{max-height:560px; overflow:auto; border:1px solid var(--border); border-radius:var(--r); overscroll-behavior:contain;}
-.cfg-table{width:100%; border-collapse:collapse; font-size:12.5px; min-width:820px;}
+.cfg-table{width:100%; border-collapse:collapse; font-size:12.5px; min-width:640px;}
+.cfg-table td:nth-child(6){min-width:260px;}
 .cfg-table th{position:sticky; top:0; z-index:1; background:#FAFAFB; text-align:left; font-size:10.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft); padding:8px 10px; border-bottom:1px solid var(--border);}
 .cfg-table td{padding:7px 10px; border-bottom:1px solid #F1F3F4; vertical-align:top;}
 .cfg-table tbody tr:hover td{background:#FAFAFB;}
@@ -345,7 +346,7 @@ table.jo-table td.actions{display:flex; gap:6px; flex-wrap:wrap;}
   <div class="app-frame" id="s4-frame"></div>
 </div>
 
-<!-- SCREEN 5: Configuration (Event Logs) -->
+<!-- SCREEN 5: Configuration (Sync Logs) -->
 <div id="s5" class="screen">
   <div class="app-frame" id="s5-frame"></div>
 </div>
@@ -822,7 +823,7 @@ async function loadFromSupabase(){
   if(entries.some(([,objs])=>objs.length===0)) return null;   // not synced yet: use the Sheet / CSV
   const db = buildDBFromTabs(Object.fromEntries(entries.map(([tab, objs])=>[tab, supaToRows(tab, objs)])));
   SOURCE_LABEL = 'Supabase (kiroku)';
-  EVENT_LOGS = await fetchEventLogs().catch(e=>{ console.warn('event_logs load failed:', e); return null; });
+  EVENT_LOGS = await fetchEventLogs().catch(e=>{ console.warn('sync_logs load failed:', e); return null; });
   return db;
 }
 async function loadFromSource(){
@@ -1565,14 +1566,14 @@ function renderAllScreens(){
   document.getElementById('dbTag').textContent = `${DB.tasks.length} tasks · ${DB.users.length} users · source: ${SOURCE_LABEL}`;
 }
 
-/* ---------- Configuration: event logs ---------- */
+/* ---------- Configuration: sync logs (table sync_logs) ---------- */
 let EVENT_LOGS = null;               // null = not loaded from Supabase (sheet / CSV mode)
 const cfgFilter = {q:'', module:'', action:'', status:''};
 
 async function fetchEventLogs(){
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/event_logs?select=*&order=event_at.desc&limit=500`, {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/sync_logs?select=*&order=event_at.desc&limit=500`, {
     headers:{apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`}, cache:'no-store'});
-  if(!res.ok) throw new Error(`event_logs: HTTP ${res.status}`);
+  if(!res.ok) throw new Error(`sync_logs: HTTP ${res.status}`);
   return res.json();
 }
 function fmtManila(iso){
@@ -1596,13 +1597,13 @@ function cfgSet(key, value){ cfgFilter[key] = value; updateConfigTable(); }
 function cfgClear(){ Object.keys(cfgFilter).forEach(k=>cfgFilter[k]=''); renderAllScreens(); }
 function buildConfigScreen(){
   const head = navHTML('Configuration');
-  if(EVENT_LOGS===null) return head + `<div class="cfg-wrap"><div class="empty-note">Event logs are only available when Kiroku loads from Supabase. Reload after the sync has run.</div></div>`;
+  if(EVENT_LOGS===null) return head + `<div class="cfg-wrap"><div class="empty-note">Sync logs are only available when Kiroku loads from Supabase. Reload after the sync has run.</div></div>`;
   const opts = (arr, cur, all) => `<option value="">${all}</option>` + arr.map(v=>`<option value="${escHTML(v)}" ${v===cur?'selected':''}>${escHTML(v)}</option>`).join('');
   const actions = [...new Set(EVENT_LOGS.map(e=>e.action))].sort();
   const f = cfgFilter;
   return head + `<div class="cfg-wrap">
     <div class="cfg-hd">
-      <div><div class="cfg-title">Event Logs</div><div class="cfg-sub">Every recorded change and activity, newest first. Times are Philippine time.</div></div>
+      <div><div class="cfg-title">Sync Logs</div><div class="cfg-sub">Google Sheets to Supabase sync: records created and changed, newest first. Times are Philippine time.</div></div>
       <div class="cfg-count" id="cfgCount"></div>
     </div>
     <div class="cfg-filters">

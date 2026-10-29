@@ -70,10 +70,10 @@ function syncAll() {
   });
 }
 
-// Writes one 'Sync Failed' row to event_logs. It never throws, so the original error still shows.
+// Writes one 'Sync Failed' row to sync_logs. It never throws, so the original error still shows.
 function logSyncFailure(url, key, sourceKey, message) {
   try {
-    UrlFetchApp.fetch(url + '/rest/v1/event_logs', {
+    UrlFetchApp.fetch(url + '/rest/v1/sync_logs', {
       method: 'post',
       contentType: 'application/json',
       headers: { apikey: key, Authorization: 'Bearer ' + key, Prefer: 'return=minimal' },
