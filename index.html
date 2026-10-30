@@ -88,6 +88,13 @@ body{background:var(--bg); font-family:var(--font-body); color:var(--ink); paddi
 .notif-new{background:var(--darkred); color:#fff; border-radius:2px; padding:0 4px; margin-left:4px;}
 .notif-main{font-size:13px; font-weight:700; color:var(--ink);}
 .notif-sub{font-size:11.5px; color:var(--ink-soft);}
+.card-tabs{display:flex; gap:4px; padding:0 10px; border-bottom:1px solid var(--border); background:#FAFAFB;}
+.card-tab{border:none; background:none; padding:9px 9px; font-family:var(--font-body); font-size:12.5px; font-weight:700; color:var(--ink-soft); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px;}
+.card-tab:hover{color:var(--ink);}
+.card-tab.on{color:var(--ink); border-bottom-color:var(--darkred);}
+.tab-n{font-size:11px; color:var(--ink-soft); background:var(--neutral-bg); border-radius:8px; padding:0 6px; margin-left:4px;}
+.msg-subj{font-size:13px; font-weight:700; margin-bottom:3px;}
+.msg-tag{background:var(--blue-light); color:var(--blue); border:1px solid #CFDDEE; font-size:10.5px; font-weight:800; padding:1px 6px; border-radius:var(--r); text-transform:uppercase; letter-spacing:.03em;}
 .notif-empty{padding:14px 12px; font-size:12.5px; color:var(--ink-soft); font-style:italic;}
 .queue-item .qbody{flex:1;}
 .queue-item .qn{font-size:13.5px; font-weight:700;}
@@ -1631,10 +1638,7 @@ function buildJODetail(joId, highlightTaskId, backFn, backLabel, pageContext, pa
         ${markDoneButtonHTML(actionTarget, pageContext)}
         <button class="save-btn" onclick="manualSave('${actionTarget.id}',null,'${pageContext}')" title="Save manually">💾</button>
       </div>
-      <div class="card">
-        <div class="card-hd"><span class="t">Notes</span></div>
-        <div data-notes-task="${actionTarget.id}">${notesHTML(actionTarget)}</div>
-      </div>
+      <div class="card" data-notes-task="${actionTarget.id}">${notesCardHTML(actionTarget)}</div>
     </div>
     <div class="side-col">
       <div class="gate-ring-wrap">
@@ -1647,6 +1651,34 @@ function buildJODetail(joId, highlightTaskId, backFn, backLabel, pageContext, pa
   `;
 }
 
+/* Notes and Messages share one card on the task detail; the tab chooses which one shows. */
+let taskCardTab = 'notes';
+function setTaskCardTab(tab){ taskCardTab = tab; renderAllScreens(); }
+function notesCardHTML(task){
+  const notes = (task.activity||[]).filter(a=>a.type==='note' && a.text);
+  const msgs = (task.activity||[]).filter(a=>a.type==='message' && a.text);
+  const tab = taskCardTab;
+  return `<div class="card-tabs">
+      <button type="button" class="card-tab ${tab==='notes'?'on':''}" onclick="setTaskCardTab('notes')">Notes <span class="tab-n">${notes.length}</span></button>
+      <button type="button" class="card-tab ${tab==='messages'?'on':''}" onclick="setTaskCardTab('messages')">Messages <span class="tab-n">${msgs.length}</span></button>
+    </div>
+    <div class="card-body">${tab==='notes' ? notesHTML(task) : messagesHTML(task)}</div>`;
+}
+function messagesHTML(task){
+  const msgs = (task.activity||[]).filter(a=>a.type==='message' && a.text).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  if(!msgs.length) return '<div class="empty-note">No messages sent for this task yet.</div>';
+  return msgs.map(a=>{
+    const lines = a.text.split('\n');
+    const to = (lines[0]||'').replace(/^To: /,'');
+    const subject = (lines[1]||'').replace(/^Subject: /,'');
+    const body = lines.slice(3).join('\n');
+    return `<div class="note-row">
+      <div class="msg-subj">${escHTML(subject || '(no subject)')}</div>
+      <div class="note-text">${escHTML(body)}</div>
+      <div class="note-meta"><span class="msg-tag">Message</span><span>${escHTML((getUser(a.user)||{}).name || a.user || '')} → ${escHTML(to)}</span><span>${fmtStamp(a)}</span></div>
+    </div>`;
+  }).join('');
+}
 function notesHTML(task){
   const notes = (task.activity||[]).filter(a=>a.type==='note' && a.text).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
   return notes.length ? notes.map(a=>`<div class="note-row">
@@ -1697,7 +1729,7 @@ function recentActionsHTML(task){
 function refreshActivityViews(){
   document.querySelectorAll('[data-ra-task]').forEach(el=>{ const t = getTaskById(el.dataset.raTask); if(t) el.innerHTML = recentActionsHTML(t); });
   document.querySelectorAll('[data-ra-count]').forEach(el=>{ const t = getTaskById(el.dataset.raCount); if(t) el.textContent = taskActivityItems(t).length || ''; });
-  document.querySelectorAll('[data-notes-task]').forEach(el=>{ const t = getTaskById(el.dataset.notesTask); if(t) el.innerHTML = notesHTML(t); });
+  document.querySelectorAll('[data-notes-task]').forEach(el=>{ const t = getTaskById(el.dataset.notesTask); if(t) el.innerHTML = notesCardHTML(t); });
   updateEventLogTable();
 }
 
