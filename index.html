@@ -1640,7 +1640,6 @@ function buildJODetail(joId, highlightTaskId, backFn, backLabel, pageContext, pa
       <div class="gate-ring-wrap">
         <div class="gate-ring" style="background:conic-gradient(var(--blue) 0% ${pct}%, #E5E7EB ${pct}% 100%)"><div class="hole">${doneCount}/${total}</div></div>
         <div><div style="font-size:11.5px;font-weight:800;color:var(--ink-soft);letter-spacing:.05em;">TO DO</div><div style="font-size:13px;font-weight:700;">Job Order Gates</div></div>
-        <button class="save-btn" onclick="manualSave('${actionTarget.id}',null,'${pageContext}')" title="Save manually">💾</button>
       </div>
       <div class="gate-list-scroll">${gateRows}</div>
     </div>
