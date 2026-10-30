@@ -1,4 +1,4 @@
--- Kiroku V4 — sync_logs: one permanent row per recorded change or activity.
+-- Kiroku V4 — event_logs: one permanent row per recorded change or activity.
 -- Run once in: Supabase dashboard > SQL Editor > New query > paste > Run.
 -- Run after 01_schema.sql. Does not change any existing table.
 --
@@ -10,7 +10,7 @@
 --
 -- Timestamps are stored in UTC (timestamptz). The Configuration page shows them in Asia/Manila.
 
-create table public.sync_logs (
+create table public.event_logs (
   id            bigint generated always as identity primary key,   -- unique event ID
   event_at      timestamptz not null default now(),                -- when it happened (UTC)
   event_type    text not null check (event_type in
@@ -30,14 +30,14 @@ create table public.sync_logs (
   created_at    timestamptz not null default now()
 );
 
-create index sync_logs_event_at_idx on public.sync_logs (event_at desc);
-create index sync_logs_record_idx   on public.sync_logs (module, record_id);
-create index sync_logs_user_idx     on public.sync_logs (user_id);
-create index sync_logs_source_idx   on public.sync_logs (source, event_type);
+create index event_logs_event_at_idx on public.event_logs (event_at desc);
+create index event_logs_record_idx   on public.event_logs (module, record_id);
+create index event_logs_user_idx     on public.event_logs (user_id);
+create index event_logs_source_idx   on public.event_logs (source, event_type);
 
 -- Anyone with the publishable key can read the history (same as the other tables).
 -- Only the service_role key (sync) and, later, signed-in users can write.
-alter table public.sync_logs enable row level security;
-create policy "read sync_logs" on public.sync_logs for select to anon, authenticated using (true);
+alter table public.event_logs enable row level security;
+create policy "read event_logs" on public.event_logs for select to anon, authenticated using (true);
 
-revoke insert, update, delete on public.sync_logs from anon, authenticated;
+revoke insert, update, delete on public.event_logs from anon, authenticated;

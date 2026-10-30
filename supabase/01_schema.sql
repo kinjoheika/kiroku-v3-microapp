@@ -1,6 +1,6 @@
 -- Kiroku V4 — Supabase schema
 -- Mirrors the Google Sheet tabs (Users, Kumiai, Companies, JobOrders, Tasks, Activity)
--- and adds sync_runs + event_log. IDs keep the sheet's text IDs (u1, k1, c1, j1,
+-- and adds sync_runs. The change log is event_logs (04_event_logs.sql). IDs keep the sheet's text IDs (u1, k1, c1, j1,
 -- j1-TIO-0) so existing data and the UI can map over without remapping.
 --
 -- Run once in: Supabase dashboard > SQL Editor > New query > paste > Run.
@@ -95,25 +95,6 @@ create table public.sync_runs (
   counts      jsonb
 );
 
--- ---------------------------------------------------------------- event_log
--- Every created / updated record, and every finished sync run.
--- Written only by sync_import (and later by UI edits) so history is append-only.
-create table public.event_log (
-  event_id     bigint generated always as identity primary key,
-  occurred_at  timestamptz not null default now(),
-  actor        text,                             -- Kiroku user, or 'sheet-sync'
-  action       text not null check (action in ('created','updated','sync_completed','ui_edit')),
-  entity       text not null,                    -- table name, or 'sync_run'
-  record_id    text,
-  field        text,
-  old_value    text,
-  new_value    text,
-  source_sheet text,                             -- Sheet source key
-  sync_run_id  bigint references public.sync_runs(run_id)
-);
-create index on public.event_log (entity, record_id);
-create index on public.event_log (occurred_at desc);
-
 -- ---------------------------------------------------------------- updated_at trigger
 create function public.touch_updated_at() returns trigger
 language plpgsql as $$
@@ -138,12 +119,11 @@ alter table public.job_orders enable row level security;
 alter table public.tasks      enable row level security;
 alter table public.activity   enable row level security;
 alter table public.sync_runs  enable row level security;
-alter table public.event_log  enable row level security;
 
 do $$
 declare t text;
 begin
-  foreach t in array array['users','kumiai','companies','job_orders','tasks','activity','sync_runs','event_log'] loop
+  foreach t in array array['users','kumiai','companies','job_orders','tasks','activity','sync_runs'] loop
     execute format('create policy "read %1$s" on public.%1$I for select to anon, authenticated using (true)', t);
   end loop;
 end $$;

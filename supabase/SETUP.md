@@ -71,18 +71,41 @@ Files: `03_sync.sql` (the sync function), `apps-script/Sync.gs` (reads the sheet
    Do NOT run `02_seed.sql` if you will sync the real sheets (it would load the sample data first).
 2. **Copy the keys** from Project Settings > API:
    the Project URL and the **service_role** key (secret).
-3. **Apps Script:** open each Google Sheet > Extensions > Apps Script, paste `apps-script/Sync.gs`.
+3. **Apps Script:** open ONE Google Sheet (the masterlist) > Extensions > Apps Script, paste `apps-script/Sync.gs`.
+   One copy syncs all five sheets; copies in other sheets would run the sync several times.
    Project Settings (gear icon) > Script Properties, add:
    - `SUPABASE_URL` = your Project URL
    - `SUPABASE_SERVICE_KEY` = the service_role key
    - `SHEET_ID_1` … `SHEET_ID_4` = the spreadsheet IDs (the part between `/d/` and `/edit` in the URL)
-4. In `SOURCES` at the top of `Sync.gs`, list which tab of each sheet maps to which table.
+4. `SOURCES` at the top of `Sync.gs` lists each sheet, its owner and the tabs it sends.
 5. Run `syncAll` once (Run button) and approve the permissions. Check the Execution log.
-   Then run `installTrigger` once to sync every 15 minutes.
+   Then run `installTrigger` once to sync every 5 minutes.
 
 Re-running a sync never duplicates rows: each row is matched by its key
 (`user_id`, `kumiai_id`, `company_id`, `jo_id`, `task_id`, or `activity_key` for activity).
-Every new row and every changed field is recorded in `event_log`, and each run in `sync_runs`.
+Every new row and every changed field is recorded in `event_logs` (run `04_event_logs.sql` first), and each run in `sync_runs`.
+
+If `event_logs` has the old columns (`event_id`, `occurred_at`, `actor`, `entity` …), every sync fails.
+Repair: run `07_fix_event_logs.sql`, then re-run `03_sync.sql`, then run `syncAll` once.
+The old rows are kept in `event_log_old`, and their created/updated history is copied into `event_logs`.
+
+**Who sends what (one owner per row, so no sheet overwrites another):**
+
+| Sheet | Sends to Supabase |
+|---|---|
+| Masterlist | Users, Kumiai, Companies, JobOrders (synced first) |
+| Doc Officer 1..4 | Only Tasks where `editor_id` is that officer (u1..u4), and Activity on those tasks |
+
+Every Doc Officer sheet still shows every task. After the sync, the other officers' task rows are
+rewritten from Supabase and shaded grey; edits there are ignored and put back. New companies and
+job orders go in the masterlist.
+Each Doc Officer sheet needs only Tasks, Activity and Event Log: run `removeUnusedTabs` once to delete
+its Users, Kumiai, Companies and JobOrders tabs. Run `Sync.gs` from **one** Apps Script project only (for example
+the masterlist's), with one trigger: `syncAll` already loops over all five sheets.
+
+After each sync, `Sync.gs` also copies that sheet's latest 500 `event_logs` rows into an **Event Log** tab
+in the same Google Sheet (created on the first run). It is a read-only copy: it is rewritten every sync,
+never synced back, and edits there show a warning. Supabase stays the real log.
 
 Never put the service_role key in `index.html` or any file in the GitHub repo.
 

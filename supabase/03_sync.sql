@@ -1,13 +1,13 @@
 -- Kiroku V4 — sync from Google Sheets into Supabase.
--- Run after 01_schema.sql (in the SQL Editor), before the first sync.
+-- Run after 01_schema.sql and 04_event_logs.sql (in the SQL Editor), before the first sync.
 --
 -- sync_import(source, payload) is called by apps-script/Sync.gs with the
 -- service_role key. payload is { "users": [rows], "tasks": [rows], ... } where
 -- each row is an object keyed by table column name.
 --
 -- Per row:
---   new key            -> insert, log 'created'
---   key exists, changed-> update only the changed fields, log one 'updated' per field
+--   new key            -> insert, log 'Record Created' in event_logs
+--   key exists, changed-> update only the changed fields, log one 'Record Updated' per field
 --   key exists, same   -> nothing (no write, no log)
 -- So re-running the sync with unchanged sheets adds no rows and no log entries.
 
@@ -50,9 +50,7 @@ begin
       execute format(
         'insert into public.%1$I (%2$s) select %2$s from jsonb_populate_record(null::public.%1$I, $1)',
         p_entity, cols) using r;
-      insert into public.event_log (actor, action, entity, record_id, source_sheet, sync_run_id)
-        values ('sheet-sync', 'created', p_entity, k, p_source, p_run);
-      insert into public.sync_logs (event_type, source, action, module, record_id, description, source_sheet)
+      insert into public.event_logs (event_type, source, action, module, record_id, description, source_sheet)
         values ('Record Created', 'Google Sheets', 'Create', initcap(replace(p_entity, '_', ' ')), k,
                 initcap(replace(p_entity, '_', ' ')) || ' record added', p_source);
       n_ins := n_ins + 1;
@@ -60,10 +58,7 @@ begin
       changed := false;
       for f in select c.name from jsonb_object_keys(r) as c(name) loop
         if old_row->>f is distinct from norm->>f then
-          insert into public.event_log
-            (actor, action, entity, record_id, field, old_value, new_value, source_sheet, sync_run_id)
-          values ('sheet-sync', 'updated', p_entity, k, f, old_row->>f, norm->>f, p_source, p_run);
-          insert into public.sync_logs
+          insert into public.event_logs
             (event_type, source, action, module, record_id, field_changed, old_value, new_value, description, source_sheet)
           values ('Record Updated', 'Google Sheets', 'Update', initcap(replace(p_entity, '_', ' ')), k,
                   initcap(replace(f, '_', ' ')), old_row->>f, norm->>f,
@@ -116,13 +111,11 @@ begin
 
   update public.sync_runs set status = 'succeeded', finished_at = now(), counts = res
     where run_id = v_run;
-  insert into public.event_log (actor, action, entity, source_sheet, sync_run_id, new_value)
-    values ('sheet-sync', 'sync_completed', 'sync_run', p_source, v_run, res::text);
 
   -- Only log a sync when something changed, so the page is not flooded every 5 minutes.
   if exists (select 1 from jsonb_each(res) e
              where (e.value->>'inserted')::int + (e.value->>'updated')::int > 0) then
-    insert into public.sync_logs (event_type, source, action, module, description, source_sheet)
+    insert into public.event_logs (event_type, source, action, module, description, source_sheet)
       values ('Sync Completed', 'Google Sheets', 'Sync', 'Sync', 'Sheet changes synced to Supabase', p_source);
   end if;
 

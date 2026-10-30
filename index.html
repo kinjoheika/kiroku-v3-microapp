@@ -450,12 +450,21 @@ const TODAY = new Date('2026-07-31T00:00:00');
 const STORAGE_KEY = 'kiroku_sample_db_v2';
 
 /* ---------- Data source ----------
-   Paste a Google Sheet ID below (or open the page as index.html?sheet=<ID>).
-   The sheet must be shared "Anyone with the link: Viewer" and have tabs named
-   Users, Kumiai, Companies, JobOrders, Tasks, Activity (see Kiroku_Sample_Sheet.xlsx).
-   Blank = read the bundled CSVs in ./data instead. */
+   Backup when Supabase is unreachable, split the same way as apps-script/Sync.gs:
+   the masterlist (SHEET_ID) gives Users, Kumiai, Companies, JobOrders, and each
+   Doc Officer sheet gives only its owner's Tasks (editor_id) and their Activity.
+   Every sheet must be shared "Anyone with the link: Viewer".
+   index.html?sheet=<ID> reads all six tabs from one sheet instead (see Kiroku_Sample_Sheet.xlsx).
+   Blank SHEET_ID = read the bundled CSVs in ./data instead. */
 const SHEET_ID = '1OcjPALavuFbnMdhoTTRtqppKyK94CIDCWord2Gqi6OA';
 const SHEET_TABS = ['Users','Kumiai','Companies','JobOrders','Tasks','Activity'];
+const SHARED_SHEET_TABS = ['Users','Kumiai','Companies','JobOrders'];
+const OFFICER_SHEETS = {   // Doc Officer 1..4 sheet IDs (SHEET_ID_1..4 in Sync.gs)
+  u1: '14W4LtspvWhmp6dIwtkoWicLy98MO7nmaT5e_nRpXbgs',
+  u2: '1mBsENuWFOYi45mILo7Za_5HIqFvwNzsR9eidq7gsAno',
+  u3: '12k81jEyzBj1osoxxQ9XfSe2PZoDQr-b5qPU2sNeyX7M',
+  u4: '1edyDABJKPno_hHU73POsNI6T5cjD4PBtCZ6xUkZonTE',
+};
 /* Supabase (kiroku project). The publishable key is safe in the browser: row security
    only allows reads. If these tables are empty or unreachable, the page falls back to
    the Sheet / CSV above. */
@@ -1209,10 +1218,35 @@ async function loadFromSource(){
     if(db) return db;
   } catch(e){ console.warn('Supabase load failed, trying Sheet / CSV:', e); }
   const sheetId = sheetIdFromPage();
+  if(sheetId === SHEET_ID && SHEET_ID) return loadFromOfficerSheets();
   const entries = await Promise.all(SHEET_TABS.map(async tab=>[tab, await fetchTab(tab, sheetId)]));
   const db = buildDBFromTabs(Object.fromEntries(entries));
   SOURCE_LABEL = sheetId ? `Google Sheet ${sheetId.slice(0,8)}…` : 'Bundled CSV (data/)';
   return db;
+}
+async function loadFromOfficerSheets(){
+  const owners = Object.entries(OFFICER_SHEETS);
+  if(owners.some(([,id])=>!id)) throw new Error('OFFICER_SHEETS is missing a Doc Officer sheet ID');
+  const [shared, parts] = await Promise.all([
+    Promise.all(SHARED_SHEET_TABS.map(async tab=>[tab, await fetchTab(tab, SHEET_ID)])),
+    Promise.all(owners.map(async ([owner, id])=>[owner, await fetchTab('Tasks', id), await fetchTab('Activity', id)])),
+  ]);
+  const tasks = [], activity = [];
+  parts.forEach(([owner, taskRows, actRows])=>{
+    const own = tabToObjects(taskRows).filter(t=>t.editor_id===owner);
+    const ids = new Set(own.map(t=>t.task_id));
+    tasks.push(...own);
+    activity.push(...tabToObjects(actRows).filter(a=>ids.has(a.task_id)));
+  });
+  const db = buildDBFromTabs({...Object.fromEntries(shared),
+    Tasks: objectsToRows(tasks, parts[0][1][0]), Activity: objectsToRows(activity, parts[0][2][0])});
+  SOURCE_LABEL = 'Google Sheets (masterlist + Doc Officer sheets)';
+  return db;
+}
+function objectsToRows(objs, emptyHeader){
+  // Back to the [header, ...rows] shape buildDBFromTabs takes; columns matched by name.
+  const hdr = objs.length ? Object.keys(objs[0]) : emptyHeader.map(h=>h.trim());
+  return [hdr, ...objs.map(o=>hdr.map(h=>o[h] ?? ''))];
 }
 async function reloadFromSource(){
   try { DB = await loadFromSource(); }
