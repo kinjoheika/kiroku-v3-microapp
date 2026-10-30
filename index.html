@@ -71,6 +71,7 @@ body{background:var(--bg); font-family:var(--font-body); color:var(--ink); paddi
 .ball.done{background:var(--blue);} .ball.pending{background:var(--gold);} .ball.flagged{background:var(--darkred);} .ball.none{background:#D8DBDE;}
 .ball-md{width:16px; height:16px; margin-top:0;}
 .active-ring{box-shadow:0 0 0 3px var(--gold);}
+.follow-ring{box-shadow:0 0 0 2px #fff, 0 0 0 4px #E0B93A !important;}
 .queue-item .qbody{flex:1;}
 .queue-item .qn{font-size:13.5px; font-weight:700;}
 .queue-item .qs{font-size:12px; color:var(--ink-soft); margin-top:1px;}
@@ -303,6 +304,7 @@ body.logging .action-row, body.logging .gate-row .ball, body.logging .cbx{pointe
 .w-row .wt{font-size:11px; color:var(--ink-soft); margin-left:38px;}
 .w-row.sel .wt{color:#C7CBD1;}
 .w-balls{display:flex; gap:7px; margin-top:8px; margin-left:38px;}
+.t-row .tcount{margin-left:auto; font-size:11.5px; color:var(--ink-soft); font-weight:700; white-space:nowrap;}
 .t-row{padding:11px 15px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #F5F6F7; cursor:pointer;}
 .t-row.sel{background:var(--darkred-light);}
 .t-row .tname{flex:1; font-size:13px; font-weight:600;}
@@ -717,6 +719,12 @@ function loggedToday(task, type){
 }
 function taskHasRecentActivity(t){ return (t.activity||[]).some(a=> (a.type==='followup'||a.type==='upload') && daysSince(a.date)>=0 && daysSince(a.date)<=7); }
 function groupHasRecentActivity(tasks){ return tasks.some(taskHasRecentActivity); }
+/* Track indicators: one rule for every Job Order and track view.
+   Red = overdue, blue = done, gray = not started and not overdue.
+   A yellow outline = a follow-up is recorded for the track, whatever its colour. */
+function trackColor(st){ return st==='flagged' ? 'var(--darkred)' : st==='done' ? 'var(--blue)' : '#D8DBDE'; }
+function trackClass(st){ return st==='flagged' ? 'flagged' : st==='done' ? 'done' : 'none'; }
+function trackFollowUp(tks){ return tks.length>0 && tks.some(t=>(t.activity||[]).some(a=>a.type==='followup')); }
 
 /* ---------- Activity log (Supabase table activity_logs, supabase/06_activity_logs.sql) ----------
    Every successful task action is stored through log_task_activity(), which stamps the server
@@ -1304,9 +1312,20 @@ function firstJOForTrack(trackKey){
   const list = visibleJOs().filter(j=>j.active && tasksForJO(j.id).some(t=>t.track===trackKey && !t.done));
   return list.length ? list[0].id : (DB.jobOrders.find(j=>j.active)||{}).id || null;
 }
-function josForTrack(trackKey){
-  if(!trackKey) return [];
-  return visibleJOs().filter(j=>j.active && tasksForJO(j.id).some(t=>t.track===trackKey && !t.done));
+// Job orders with open work. With no track selected, every track in keys counts.
+function josForTrack(trackKey, keys=TRACK_DEFS.map(t=>t.key)){
+  return visibleJOs().filter(j=>j.active && tasksForJO(j.id).some(t=>
+    (trackKey ? t.track===trackKey : keys.includes(t.track)) && !t.done));
+}
+// Clicking the selected track again clears it; the job order stays selected when it still has work.
+function chooseTrack(scope, k, keys){
+  const cur = scope==='mine' ? s2Track : s3Track;
+  const next = cur===k ? null : k;
+  const list = josForTrack(next, keys);
+  const jo = scope==='mine' ? s2JO : s3JO;
+  const kept = list.some(j=>j.id===jo) ? jo : (list.length ? list[0].id : null);
+  if(scope==='mine'){ s2Track = next; s2JO = kept; } else { s3Track = next; s3JO = kept; }
+  renderAllScreens();
 }
 function initSelections(){
   const myTracks = myTracksFor(currentUserId);
@@ -1320,9 +1339,9 @@ function initSelections(){
   s2Profile = null; s3Profile = null; s2Archived = false; s2Form = null;
 }
 
-function selectS2Track(k){ s2Track=k; s2JO=firstJOForTrack(k); renderAllScreens(); }
+function selectS2Track(k){ chooseTrack('mine', k, myTracksFor(currentUserId).map(t=>t.key)); }
 function selectS2JO(id){ s2JO=id; renderAllScreens(); }
-function selectS3Track(k){ s3Track=k; s3JO=firstJOForTrack(k); renderAllScreens(); }
+function selectS3Track(k){ chooseTrack('all', k, TRACK_DEFS.map(t=>t.key)); }
 function selectS3JO(id){ s3JO=id; renderAllScreens(); }
 function openDueGatesTaskDetail(taskId, pageContext){
   if(pageContext==='s2') s2Detail=taskId; else s3Detail=taskId;
@@ -1626,10 +1645,10 @@ function buildJOProfile(joId, pageContext){
     const tks = tasks.filter(t=>t.track===tr.key);
     const st = tks.length ? worstOf(tks) : null;
     const dCount = tks.filter(t=>t.done).length;
-    const ring = tks.length && st!=='done' && groupHasRecentActivity(tks);
-    const dotColor = !st ? '#D8DBDE' : st==='flagged'?'var(--darkred)':st==='pending'?'var(--gold)':st==='done'?'var(--blue)':'#D8DBDE';
-    return `<div class="tsc" title="${tr.name}${ring?' · followed up within 7 days':''}">
-      <div class="tscball ${ring?'active-ring':''}" style="background:${dotColor};">${tks.length ? `<div class="tsc-num">${dCount}</div><div class="tsc-of">of ${tks.length}</div>` : '—'}</div>
+    const ring = trackFollowUp(tks);
+    const dotColor = trackColor(st);
+    return `<div class="tsc" title="${tr.name}${ring?' · follow-up recorded':''}">
+      <div class="tscball ${ring?'follow-ring':''}" style="background:${dotColor};">${tks.length ? `<div class="tsc-num">${dCount}</div><div class="tsc-of">of ${tks.length}</div>` : '—'}</div>
       <div class="tsclabel">${tr.name}</div>
     </div>`;
   }).join('');
@@ -1779,7 +1798,7 @@ function buildDueGatesScreen(scope){
   const trackKey = isMine ? s2Track : s3Track;
   const selJOId = isMine ? s2JO : s3JO;
   const trackList = isMine ? myTracksFor(currentUserId) : TRACK_DEFS;
-  const joList = josForTrack(trackKey);
+  const joList = josForTrack(trackKey, trackList.map(t=>t.key));
   const searchId = isMine ? 's2' : 's3';
   const searchTerm = isMine ? s2SearchTerm : s3SearchTerm;
   const filteredJoList = joList.filter(j=>{
@@ -1793,8 +1812,8 @@ function buildDueGatesScreen(scope){
     const balls = trackList.map(td=>{
       const tks = tasksForJO(j.id).filter(t=>t.track===td.key);
       const st = tks.length ? worstOf(tks) : null;
-      const ring = tks.length && st!=='done' && groupHasRecentActivity(tks);
-      return `<span class="ball ball-md ${st || 'none'} ${ring?'active-ring':''}" style="${st?'':'opacity:.35;'}" title="${td.key}${ring?' · followed up within 7 days':''}"></span>`;
+      const ring = trackFollowUp(tks);
+      return `<span class="ball ball-md ${trackClass(st)} ${ring?'follow-ring':''}" style="${st?'':'opacity:.35;'}" title="${td.key}${ring?' · follow-up recorded':''}"></span>`;
     }).join('');
     return `<div class="w-row ${j.id===selJOId?'sel':''}" onclick="${isMine?'selectS2JO':'selectS3JO'}('${j.id}')">
       <div class="w-top"><div class="wmeta"><div class="wn" onclick="event.stopPropagation(); ${isMine?'openS2Profile':'openS3Profile'}('${j.id}')">JO# ${j.jo}</div></div></div>
@@ -1804,7 +1823,7 @@ function buildDueGatesScreen(scope){
   }).join('') || `<div class="empty-note" style="padding:15px;">${searchTerm ? 'No Job Orders match your search.' : 'No Job Orders with open items in this track.'}</div>`;
 
   const col1HTML = `<div class="tri-col col-workers">
-    <div class="tri-hd">Job Orders open in ${trackKey} · ${filteredJoList.length}</div>
+    <div class="tri-hd">Job Orders open in ${trackKey || 'all tracks'} · ${filteredJoList.length}</div>
     ${isMine && canManageJOs() ? `<button class="newjo-btn" onclick="openS2Form(null)">+ New Job Order</button><button class="act-btn" style="margin:0 13px 11px;" onclick="openS2Archived()">🗄 View Archived</button>` : ''}
     <input type="text" id="search-${searchId}" class="search-input" placeholder="🔍 Search JO # or company…" value="${searchTerm}" oninput="onSearchInput(this.value,'${searchId}')">
     <div class="tri-body">${workerRows}</div>
@@ -1827,11 +1846,16 @@ function buildDueGatesScreen(scope){
   const profileId = isMine ? s2Profile : s3Profile;
   if(profileId) return navHTML(isMine?'My Due Gates':'All Due Gates') + buildJOProfile(profileId, pageContext);
 
+  // All tracks panel: with a job order selected, each track shows that job order's status for the track,
+  // the same colour as its circle in the job order list.
   const trackRows = trackList.map(tr=>{
-    const st = worstOf(tasksInTrackAcrossActiveJOs(tr.key)) || 'none';
-    const dotColor = st==='flagged'?'var(--darkred)':st==='pending'?'var(--gold)':st==='done'?'var(--blue)':'#D8DBDE';
-    return `<div class="t-row ${tr.key===trackKey?'sel':''}" onclick="${isMine?'selectS2Track':'selectS3Track'}('${tr.key}')">
-      <span class="tball" style="background:${dotColor}"></span><span class="tname">${tr.name}</span>
+    const tks = selJOId ? tasksForJO(selJOId).filter(t=>t.track===tr.key) : tasksInTrackAcrossActiveJOs(tr.key);
+    const st = tks.length ? worstOf(tks) : null;
+    const ring = trackFollowUp(tks);
+    const doneN = tks.filter(t=>t.done).length;
+    return `<div class="t-row ${tr.key===trackKey?'sel':''}" onclick="${isMine?'selectS2Track':'selectS3Track'}('${tr.key}')" title="${tr.name} · click again to show all tracks">
+      <span class="tball ${ring?'follow-ring':''}" style="background:${trackColor(st)}"></span><span class="tname">${tr.name}</span>
+      <span class="tcount">${tks.length ? doneN+'/'+tks.length : ''}</span>
     </div>`;
   }).join('');
 
@@ -1839,7 +1863,10 @@ function buildDueGatesScreen(scope){
   let bottomBar = '';
   if(selJOId){
     const jo = getJO(selJOId);
-    const tasks = tasksForJO(selJOId).filter(t=>t.track===trackKey);
+    // One track: its steps. No track: every step of the job order, TIO then OTIT then COE, in sheet order.
+    const tasks = tasksForJO(selJOId)
+      .filter(t=>trackKey ? t.track===trackKey : trackList.some(x=>x.key===t.track))
+      .slice().sort((a,b)=>TRACK_DEFS.findIndex(x=>x.key===a.track)-TRACK_DEFS.findIndex(x=>x.key===b.track));
     const doneCount = tasks.filter(t=>t.done).length, total = tasks.length;
     const pct = total ? Math.round(doneCount/total*100) : 0;
     const items = tasks.map(t=>{
@@ -1862,14 +1889,14 @@ function buildDueGatesScreen(scope){
     }).join('');
     checklistHTML = `<div class="check-hd">
         <div class="cav">${initialsFromName(jo.candidateName)}</div>
-        <div><div class="cn">JO# ${jo.jo}</div><div class="cs">${trackKey}</div><div class="crecv">${receivingHTML(selJOId)} · Target Deploy: <b>${fmtDate(jo.targetDeploymentDate)}</b></div></div>
+        <div><div class="cn">JO# ${jo.jo}</div><div class="cs">${trackKey || 'All tracks · overall progress'}</div><div class="crecv">${receivingHTML(selJOId)} · Target Deploy: <b>${fmtDate(jo.targetDeploymentDate)}</b></div></div>
         <div class="cring">
           <div class="gate-ring" style="width:40px;height:40px;background:conic-gradient(var(--blue) 0% ${pct}%, #E5E7EB ${pct}% 100%)"><div class="hole" style="width:28px;height:28px;font-size:10px;">${doneCount}/${total}</div></div>
           <div style="font-size:11px;font-weight:800;color:var(--ink-soft);">TO DO</div>
         </div>
         ${isMine ? `<button class="save-btn" onclick="manualSave(null,'${selJOId}','s2')" title="Save manually">💾</button>` : ''}
       </div><div class="tri-body">${items}</div>`;
-    bottomBar = `<div class="bottom-bar">✓ ${doneCount} of ${total} ${trackKey} items cleared for JO# ${jo.jo} ${!isMine?'<span class="dim">· read-only view</span>':''}</div>`;
+    bottomBar = `<div class="bottom-bar">✓ ${doneCount} of ${total} ${trackKey || 'all tracks'} items cleared for JO# ${jo.jo} ${!isMine?'<span class="dim">· read-only view</span>':''}</div>`;
   }
 
   return navHTML(isMine?'My Due Gates':'All Due Gates') +
@@ -1908,10 +1935,10 @@ function buildScreen4(){
       const tks = jos.flatMap(j=>tasksForJO(j.id)).filter(t=>t.track===tr.key);
       const st = tks.length ? worstOf(tks) : null;
       const doneCount = tks.filter(t=>t.done).length;
-      const ring = tks.length && st!=='done' && groupHasRecentActivity(tks);
-      const dotColor = !st ? '#D8DBDE' : st==='flagged'?'var(--darkred)':st==='pending'?'var(--gold)':st==='done'?'var(--blue)':'#D8DBDE';
-      return `<div class="tsc" title="${tr.name}${ring?' · followed up within 7 days':''}">
-        <div class="tscball ${ring?'active-ring':''}" style="background:${dotColor};">${tks.length ? `<div class="tsc-num">${doneCount}</div><div class="tsc-of">of ${tks.length}</div>` : '—'}</div>
+      const ring = trackFollowUp(tks);
+      const dotColor = trackColor(st);
+      return `<div class="tsc" title="${tr.name}${ring?' · follow-up recorded':''}">
+        <div class="tscball ${ring?'follow-ring':''}" style="background:${dotColor};">${tks.length ? `<div class="tsc-num">${doneCount}</div><div class="tsc-of">of ${tks.length}</div>` : '—'}</div>
         <div class="tsclabel">${tr.name}</div>
       </div>`;
     }).join('');
@@ -1930,10 +1957,10 @@ function buildScreen4(){
         const tks = tasksForJO(j.id).filter(t=>t.track===tr.key);
         const st = tks.length ? worstOf(tks) : null;
         const doneCount = tks.filter(t=>t.done).length;
-        const ring = tks.length && st!=='done' && groupHasRecentActivity(tks);
-        const dotColor = !st ? '#D8DBDE' : st==='flagged'?'var(--darkred)':st==='pending'?'var(--gold)':st==='done'?'var(--blue)':'#D8DBDE';
-        return `<div class="jo3-tsc" title="${tr.name}${ring?' · followed up within 7 days':''}">
-          <div class="jo3-ball ${ring?'active-ring':''}" style="background:${dotColor};">${tks.length ? `<div class="tsc-num">${doneCount}</div><div class="tsc-of">of ${tks.length}</div>` : '—'}</div>
+        const ring = trackFollowUp(tks);
+        const dotColor = trackColor(st);
+        return `<div class="jo3-tsc" title="${tr.name}${ring?' · follow-up recorded':''}">
+          <div class="jo3-ball ${ring?'follow-ring':''}" style="background:${dotColor};">${tks.length ? `<div class="tsc-num">${doneCount}</div><div class="tsc-of">of ${tks.length}</div>` : '—'}</div>
           <div class="jo3-lbl">${tr.name}</div>
         </div>`;
       }).join('');
