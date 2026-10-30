@@ -1317,14 +1317,12 @@ function josForTrack(trackKey, keys=TRACK_DEFS.map(t=>t.key)){
   return visibleJOs().filter(j=>j.active && tasksForJO(j.id).some(t=>
     (trackKey ? t.track===trackKey : keys.includes(t.track)) && !t.done));
 }
-// Clicking the selected track again clears it; the job order stays selected when it still has work.
-function chooseTrack(scope, k, keys){
+// Switching or clearing a track never changes the selected job order.
+// Clicking the selected track again clears it and shows every track's steps.
+function chooseTrack(scope, k){
   const cur = scope==='mine' ? s2Track : s3Track;
   const next = cur===k ? null : k;
-  const list = josForTrack(next, keys);
-  const jo = scope==='mine' ? s2JO : s3JO;
-  const kept = list.some(j=>j.id===jo) ? jo : (list.length ? list[0].id : null);
-  if(scope==='mine'){ s2Track = next; s2JO = kept; } else { s3Track = next; s3JO = kept; }
+  if(scope==='mine') s2Track = next; else s3Track = next;
   renderAllScreens();
 }
 function initSelections(){
@@ -1339,9 +1337,9 @@ function initSelections(){
   s2Profile = null; s3Profile = null; s2Archived = false; s2Form = null;
 }
 
-function selectS2Track(k){ chooseTrack('mine', k, myTracksFor(currentUserId).map(t=>t.key)); }
+function selectS2Track(k){ chooseTrack('mine', k); }
 function selectS2JO(id){ s2JO=id; renderAllScreens(); }
-function selectS3Track(k){ chooseTrack('all', k, TRACK_DEFS.map(t=>t.key)); }
+function selectS3Track(k){ chooseTrack('all', k); }
 function selectS3JO(id){ s3JO=id; renderAllScreens(); }
 function openDueGatesTaskDetail(taskId, pageContext){
   if(pageContext==='s2') s2Detail=taskId; else s3Detail=taskId;
@@ -1798,7 +1796,8 @@ function buildDueGatesScreen(scope){
   const trackKey = isMine ? s2Track : s3Track;
   const selJOId = isMine ? s2JO : s3JO;
   const trackList = isMine ? myTracksFor(currentUserId) : TRACK_DEFS;
-  const joList = josForTrack(trackKey, trackList.map(t=>t.key));
+  // The list does not depend on the selected track, so switching tracks never drops the selected job order.
+  const joList = josForTrack(null, trackList.map(t=>t.key));
   const searchId = isMine ? 's2' : 's3';
   const searchTerm = isMine ? s2SearchTerm : s3SearchTerm;
   const filteredJoList = joList.filter(j=>{
@@ -1817,13 +1816,13 @@ function buildDueGatesScreen(scope){
     }).join('');
     return `<div class="w-row ${j.id===selJOId?'sel':''}" onclick="${isMine?'selectS2JO':'selectS3JO'}('${j.id}')">
       <div class="w-top"><div class="wmeta"><div class="wn" onclick="event.stopPropagation(); ${isMine?'openS2Profile':'openS3Profile'}('${j.id}')">JO# ${j.jo}</div></div></div>
-      <div class="wt">${trackKey}<span class="wrecv">${receivingPlainHTML(j.id)}</span></div>
+      <div class="wt">${trackKey || 'All tracks'}<span class="wrecv">${receivingPlainHTML(j.id)}</span></div>
       <div class="w-balls">${balls}</div>
     </div>`;
   }).join('') || `<div class="empty-note" style="padding:15px;">${searchTerm ? 'No Job Orders match your search.' : 'No Job Orders with open items in this track.'}</div>`;
 
   const col1HTML = `<div class="tri-col col-workers">
-    <div class="tri-hd">Job Orders open in ${trackKey || 'all tracks'} · ${filteredJoList.length}</div>
+    <div class="tri-hd">Job Orders open · ${filteredJoList.length}</div>
     ${isMine && canManageJOs() ? `<button class="newjo-btn" onclick="openS2Form(null)">+ New Job Order</button><button class="act-btn" style="margin:0 13px 11px;" onclick="openS2Archived()">🗄 View Archived</button>` : ''}
     <input type="text" id="search-${searchId}" class="search-input" placeholder="🔍 Search JO # or company…" value="${searchTerm}" oninput="onSearchInput(this.value,'${searchId}')">
     <div class="tri-body">${workerRows}</div>
