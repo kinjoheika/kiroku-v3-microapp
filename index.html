@@ -203,6 +203,67 @@ table.jo-table td.actions{display:flex; gap:6px; flex-wrap:wrap;}
 .cfg-status.bad{background:var(--darkred-light); color:var(--darkred); border-color:#EAD0D3;}
 .cfg-status.pend{background:var(--gold-light); color:var(--gold-ink); border-color:#EFDFAE;}
 
+/* Notes: one compact row per saved note, with a Log Note tag, user and time */
+.note-row{padding:9px 15px; border-bottom:1px solid #F1F3F4;}
+.note-row:last-child{border-bottom:none;}
+.note-text{font-size:13px; line-height:1.45; white-space:pre-wrap; overflow-wrap:anywhere;}
+.note-meta{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:5px; font-size:11.5px; color:var(--ink-soft);}
+.note-tag{background:var(--gold-light); color:var(--gold-ink); border:1px solid #EFDFAE; font-size:10.5px; font-weight:800; padding:1px 6px; border-radius:var(--r); text-transform:uppercase; letter-spacing:.03em;}
+
+/* Send Message popup */
+.msg-ov{position:fixed; inset:0; background:rgba(15,20,25,.35); display:flex; align-items:center; justify-content:center; padding:16px; z-index:1000;}
+.msg-box{background:#fff; width:520px; max-width:100%; max-height:calc(100vh - 32px); display:flex; flex-direction:column; border-radius:3px; border:1px solid var(--border); box-shadow:0 8px 24px rgba(0,0,0,.18);}
+.msg-hd{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; padding:12px 16px; border-bottom:1px solid var(--border);}
+.msg-title{font-family:var(--font-head); font-weight:800; font-size:15px;}
+.msg-ctx{font-size:12px; color:var(--ink-soft); margin-top:2px;}
+.msg-x{border:none; background:none; font-size:20px; line-height:1; cursor:pointer; color:var(--ink-soft); padding:0 4px;}
+.msg-fields{padding:12px 16px; overflow-y:auto;}
+.msg-row{position:relative; display:grid; grid-template-columns:64px 1fr; align-items:start; gap:8px; margin-bottom:10px;}
+.msg-lbl{font-size:12px; font-weight:700; color:var(--ink-soft); padding-top:8px;}
+.msg-to{display:flex; flex-wrap:wrap; gap:5px; align-items:center; border:1px solid var(--border); border-radius:3px; padding:5px 6px; min-height:36px; cursor:text; background:#fff;}
+.msg-to input{border:none; outline:none; flex:1; min-width:140px; font:inherit; font-size:13px; padding:3px;}
+.msg-to:focus-within{border-color:var(--darkred);}
+.msg-chip{display:inline-flex; align-items:center; gap:4px; background:var(--neutral-bg); border-radius:2px; padding:2px 6px; font-size:12px; font-weight:600;}
+.msg-chip button{border:none; background:none; cursor:pointer; color:var(--ink-soft); font-size:14px; line-height:1;}
+.msg-suggest{position:absolute; left:72px; right:0; top:42px; z-index:2; background:#fff; border:1px solid var(--border); box-shadow:0 4px 12px rgba(0,0,0,.1); max-height:180px; overflow-y:auto;}
+.msg-suggest:empty{display:none;}
+.msg-opt{display:block; width:100%; text-align:left; border:none; background:#fff; padding:7px 10px; font:inherit; font-size:13px; cursor:pointer;}
+.msg-opt:hover{background:var(--gold-light);}
+.msg-at{font-weight:700; margin-right:6px;}
+.msg-role{color:var(--ink-soft); font-size:11.5px; margin-left:6px;}
+.msg-none{padding:8px 10px; font-size:12.5px; color:var(--ink-soft);}
+.msg-input{width:100%; border:1px solid var(--border); border-radius:3px; padding:7px 9px; font:inherit; font-size:13px; color:var(--ink); background:#fff;}
+.msg-input:focus{outline:none; border-color:var(--darkred);}
+textarea.msg-input{resize:vertical; min-height:120px;}
+.msg-ft{display:flex; align-items:center; gap:8px; justify-content:flex-end; padding:10px 16px; border-top:1px solid var(--border);}
+.msg-hint{margin-right:auto; font-size:12px; color:var(--ink-soft);}
+.msg-ft .act-btn:disabled{opacity:.45; cursor:not-allowed;}
+
+.card-hd .n{font-size:11px; font-weight:800; color:var(--ink-soft);}
+.ra-list{max-height:320px; overflow-y:auto; overscroll-behavior:contain;}
+.ra-item{display:flex; gap:10px; padding:9px 15px; border-bottom:1px solid #F1F3F4; align-items:flex-start;}
+.ra-item:last-child{border-bottom:none;}
+.ra-ico{width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; background:var(--neutral-bg); border:1px solid var(--border);}
+.ra-ico.k-followup, .ra-ico.k-upload{background:var(--gold-light); border-color:#EFDFAE;}
+.ra-ico.k-message{background:var(--blue-light); border-color:#CFDDEE;}
+.ra-ico.k-note{background:#F3EEF8; border-color:#E0D5EC;}
+.ra-ico.k-done{background:var(--green-light); border-color:#C7E5D0;}
+.ra-ico.k-status{background:var(--darkred-light); border-color:#EAD0D3;}
+.ra-body{flex:1; min-width:0;}
+.ra-type{font-weight:700; font-size:13px; overflow-wrap:anywhere;}
+.ra-detail{font-size:12.5px; margin-top:2px; overflow-wrap:anywhere; white-space:pre-wrap; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;}
+.ra-meta{font-size:11.5px; color:var(--ink-soft); margin-top:2px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+.ra-status{font-size:10.5px; font-weight:800; padding:1px 7px; border-radius:var(--r); background:var(--blue-light); color:var(--blue); border:1px solid #CFDDEE; white-space:nowrap;}
+.ra-warn{padding:9px 15px; font-size:12px; color:var(--darkred); background:var(--darkred-light); border-bottom:1px solid #EAD0D3;}
+body.logging .action-row, body.logging .gate-row .ball, body.logging .cbx{pointer-events:none; opacity:.7;}
+.cfg-tabs{display:flex; gap:4px; margin-bottom:12px; border-bottom:1px solid var(--border);}
+.cfg-tab{border:none; background:none; padding:8px 12px; font-weight:700; font-size:13px; color:var(--ink-soft); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; font-family:var(--font-body);}
+.cfg-tab:hover{color:var(--ink);}
+.cfg-tab.on{color:var(--darkred); border-bottom-color:var(--darkred);}
+.ev-table{min-width:860px;}
+.ev-table td:nth-child(6){min-width:0;}
+.ev-table td.ev-det{min-width:240px; max-width:420px; overflow-wrap:anywhere;}
+
 .gate-ring-wrap{display:flex;align-items:center;gap:11px;padding:15px 17px;border-bottom:1px solid var(--border); flex-shrink:0;}
 .gate-ring-wrap .save-btn{margin-left:auto;}
 .gate-list-scroll{flex:1; overflow-y:auto; min-height:0;}
@@ -353,6 +414,8 @@ table.jo-table td.actions{display:flex; gap:6px; flex-wrap:wrap;}
 
 <div id="toast" class="toast"></div>
 
+<!-- Only used to receive new activity_logs rows live (Supabase Realtime). The page works without it. -->
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.js"></script>
 <script>
 const TODAY = new Date('2026-07-31T00:00:00');
 const STORAGE_KEY = 'kiroku_sample_db_v2';
@@ -647,29 +710,295 @@ function myTracksFor(userId){
 
 /* ---------- activity / scoring ---------- */
 function daysSince(iso){ return Math.round((TODAY - new Date(iso+'T00:00:00'))/86400000); }
-function loggedToday(task, type){ return (task.activity||[]).some(a=>a.type===type && a.date===isoStr(TODAY)); }
+// Actions taken this session carry the sample TODAY; ones reloaded from activity_logs carry their real date.
+function loggedToday(task, type){
+  const sampleToday = isoStr(TODAY), realToday = manilaToday();
+  return (task.activity||[]).some(a=>a.type===type && (a.date===sampleToday || (a.logId && a.date===realToday)));
+}
 function taskHasRecentActivity(t){ return (t.activity||[]).some(a=> (a.type==='followup'||a.type==='upload') && daysSince(a.date)>=0 && daysSince(a.date)<=7); }
 function groupHasRecentActivity(tasks){ return tasks.some(taskHasRecentActivity); }
+
+/* ---------- Activity log (Supabase table activity_logs, supabase/06_activity_logs.sql) ----------
+   Every successful task action is stored through log_task_activity(), which stamps the server
+   time and reads the user's name from the users table. Recent Actions (one task) and
+   Configuration > Event Logs (all tasks) both read these rows. A task action is applied only
+   after its row is stored, so a failed save never shows up as done. */
+const LOG_TYPES = {
+  'Follow Up':     {icon:'🔁', kind:'followup', title:()=>'Follow Up'},
+  'Send Message':  {icon:'✉️', kind:'message',  title:()=>'Message Sent'},
+  'Log Note':      {icon:'📝', kind:'note',     title:()=>'Note Added'},
+  'Upload':        {icon:'📎', kind:'upload',   title:r=> r.action_details ? `File Uploaded – ${r.action_details}` : 'File Uploaded'},
+  'Mark Done':     {icon:'✅', kind:'done',     title:()=>'Task Marked Done'},
+  'Status Change': {icon:'🔄', kind:'status',   title:()=>'Status Changed'},
+  'Task Update':   {icon:'✏️', kind:'update',   title:()=>'Task Updated'},
+  'Save':          {icon:'💾', kind:'save',     title:()=>'Changes Saved'}
+};
+const LOG_TYPE_FOR = {followup:'Follow Up', message:'Send Message', note:'Log Note', upload:'Upload'};
+const KIND_FOR_LOG = Object.fromEntries(Object.entries(LOG_TYPE_FOR).map(([k,v])=>[v,k]));
+const LOG_PAGE = 1000;
+let ACTIVITY_LOGS = null;            // null = activity_logs could not be read (table missing or offline)
+let logIds = new Set();
+let logsComplete = false;            // false = more rows exist than the first page loaded
+const taskLogsLoaded = new Set();
+const logInFlight = new Set();
+
+async function supaFetch(path, opts={}){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {...opts, cache:'no-store',
+    headers:{apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type':'application/json'}});
+  if(!res.ok){
+    let msg = '';
+    try { msg = (await res.json()).message || ''; } catch(e){}
+    throw new Error(msg || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+function fetchActivityLogs(filter){
+  return supaFetch(`activity_logs?select=*${filter||''}&order=created_at.desc,activity_id.desc&limit=${LOG_PAGE}`);
+}
+async function loadActivityLogs(){
+  ACTIVITY_LOGS = null; logIds = new Set(); taskLogsLoaded.clear();
+  try {
+    const rows = await fetchActivityLogs();
+    ACTIVITY_LOGS = [];
+    logsComplete = rows.length < LOG_PAGE;
+    rows.reverse().forEach(ingestLogRow);
+  } catch(e){ console.warn('activity_logs load failed:', e); }
+}
+// Older rows for one task, when the first page did not reach back that far.
+function ensureTaskLogs(taskId){
+  if(ACTIVITY_LOGS===null || logsComplete || taskLogsLoaded.has(taskId)) return;
+  taskLogsLoaded.add(taskId);
+  fetchActivityLogs(`&task_id=eq.${encodeURIComponent(taskId)}`)
+    .then(rows=>{ if(rows.reverse().map(ingestLogRow).some(Boolean)) refreshActivityViews(); })
+    .catch(e=>{ taskLogsLoaded.delete(taskId); console.warn('activity_logs task load failed:', e); });
+}
+function manilaToday(){ return supaManilaStamp(new Date().toISOString()).slice(0,10); }
+function addTaskActivity(t, entry){
+  if(!t.activity) t.activity = [];
+  if(!t.activity.some(a=>a.logId===entry.logId)) t.activity.push(entry);
+}
+// Adds a stored row to the cache once. Follow-ups, messages, notes and uploads are also added to
+// the task's activity, so badges, Notes and the button states still see them after a refresh.
+// Returns false when the row was already known.
+function ingestLogRow(row){
+  if(!ACTIVITY_LOGS) ACTIVITY_LOGS = [];
+  if(logIds.has(row.activity_id)) return false;
+  logIds.add(row.activity_id);
+  ACTIVITY_LOGS.push(row);
+  const kind = KIND_FOR_LOG[row.action_type];
+  const t = row.task_id && getTaskById(row.task_id);
+  if(kind && t){
+    const s = supaManilaStamp(row.created_at);
+    addTaskActivity(t, {type:kind, date:s.slice(0,10), time:s.slice(11,16), user:row.user_id, logId:row.activity_id,
+      ...((kind==='note' || kind==='message') ? {text:row.action_details||''} : {}), ...(kind==='upload' ? {fileName:row.action_details||''} : {})});
+  }
+  return true;
+}
+function newClientRef(){
+  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c=>{ const r = Math.random()*16|0; return (c==='x' ? r : (r&3|8)).toString(16); });
+}
+function logEntry(actionType, f){
+  return {client_ref:newClientRef(), user_id:currentUserId, task_id:f.taskId||null, jo_id:f.joId||null,
+    action_type:actionType, details:f.details||null, previous_status:f.prev||null, updated_status:f.next||null};
+}
+// Stores the entries, then runs apply(rows). Repeat clicks while a save is in flight are ignored,
+// and a failed or refused save applies nothing. Resolves to true when stored.
+async function runLogged(key, entries, apply){
+  if(logInFlight.has(key)) return false;
+  logInFlight.add(key);
+  document.body.classList.add('logging');
+  try {
+    const rows = await supaFetch('rpc/log_task_activity', {method:'POST', body:JSON.stringify({p_entries:entries})});
+    if(apply) apply(rows);
+    rows.forEach(ingestLogRow);
+    return true;
+  } catch(e){
+    console.warn('Activity not recorded:', e);
+    showToast(`⚠ Not recorded: ${e.message}`, 4000);
+    return false;
+  } finally {
+    logInFlight.delete(key);
+    if(!logInFlight.size) document.body.classList.remove('logging');
+  }
+}
+function startActivityRealtime(){
+  if(!window.supabase || ACTIVITY_LOGS===null || window._activityChannel) return;
+  try {
+    window._activityChannel = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+      .channel('activity_logs')
+      .on('postgres_changes', {event:'INSERT', schema:'public', table:'activity_logs'}, p=>{ if(ingestLogRow(p.new)) refreshActivityViews(); })
+      .subscribe();
+  } catch(e){ console.warn('Realtime activity updates off:', e); }
+}
+function statusLabel(t){ return {done:'Done', flagged:'Overdue', pending:'Due Soon', none:'Open'}[computeStatus(t)]; }
 
 /* ---------- mutations ---------- */
 function toggleTask(taskId, pageContext){
   const t = DB.tasks.find(x=>x.id===taskId);
   if(!canEditInContext(t, pageContext)) return;
-  t.done = !t.done;
-  t.doneAt = t.done ? nowStamp() : null;
-  saveDB();
-  renderAllScreens();
+  const entry = logEntry(t.done ? 'Status Change' : 'Mark Done', {taskId,
+    details: t.done ? 'Task reopened' : 'Task marked done', prev: statusLabel(t), next: statusLabel({...t, done:!t.done})});
+  runLogged(`${taskId}|done`, [entry], ()=>{
+    t.done = !t.done;
+    t.doneAt = t.done ? nowStamp() : null;
+    saveDB();
+  }).then(ok=>{ if(ok) renderAllScreens(); });
 }
 function logActivity(taskId, type, pageContext){
   const t = DB.tasks.find(x=>x.id===taskId);
   if(!canEditInContext(t, pageContext)) return;
-  if(!t.activity) t.activity = [];
-  const s = nowStamp();
-  t.activity.push({type, date:s.date, time:s.time});
-  saveDB();
+  runLogged(`${taskId}|${type}`, [logEntry(LOG_TYPE_FOR[type], {taskId})], rows=>{
+    const s = nowStamp();
+    addTaskActivity(t, {type, date:s.date, time:s.time, user:currentUserId, logId:rows[0].activity_id});
+    saveDB();
+  }).then(ok=>{ if(ok){ renderAllScreens(); showToast(`✓ ${LOG_TYPE_FOR[type]} recorded`); } });
+}
+/* Upload: pick a file; a cancelled picker records nothing. */
+function pickUpload(taskId, pageContext){
+  const t = DB.tasks.find(x=>x.id===taskId);
+  if(!canEditInContext(t, pageContext)) return;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.onchange = ()=>{
+    const file = input.files && input.files[0];
+    if(!file) return;
+    runLogged(`${taskId}|upload`, [logEntry('Upload', {taskId, details:file.name})], rows=>{
+      const s = nowStamp();
+      addTaskActivity(t, {type:'upload', date:s.date, time:s.time, user:currentUserId, fileName:file.name, logId:rows[0].activity_id});
+      saveDB();
+    }).then(ok=>{ if(ok){ renderAllScreens(); showToast(`✓ ${file.name} recorded`); } });
+  };
+  input.click();
+}
+/* Send Message: email-style compose. To = registered users (pick, or type @ and a name). */
+let msgDraft = null;
+function openMessageModal(taskId, pageContext){
+  const t = DB.tasks.find(x=>x.id===taskId);
+  if(!t || !canEditInContext(t, pageContext)) return;
+  msgDraft = {taskId, pageContext, to:[], q:'', open:false, subject:'', body:''};
+  renderMessageModal();
+  document.getElementById('msgToInput').focus();
+}
+function closeMessageModal(){
+  const m = document.getElementById('msgModal');
+  if(m) m.style.display = 'none';
+  msgDraft = null;
+}
+function msgCandidates(){
+  const q = msgDraft.q.trim().replace(/^@/,'').toLowerCase();
+  return DB.users
+    .filter(u=>u.id!==currentUserId && !msgDraft.to.includes(u.id))
+    .filter(u=>!q || u.id.toLowerCase().includes(q) || u.name.toLowerCase().includes(q));
+}
+function msgSuggestHTML(){
+  if(!msgDraft.open) return '';
+  const list = msgCandidates();
+  return list.length
+    ? list.map(u=>`<button type="button" class="msg-opt" onmousedown="event.preventDefault()" onclick="msgAdd('${u.id}')"><span class="msg-at">@${escHTML(u.id)}</span>${escHTML(u.name)}<span class="msg-role">${escHTML(u.role)}</span></button>`).join('')
+    : '<div class="msg-none">No matching user</div>';
+}
+function renderMessageModal(){
+  let m = document.getElementById('msgModal');
+  if(!m){
+    m = document.createElement('div');
+    m.id = 'msgModal';
+    m.className = 'msg-ov';
+    m.addEventListener('click', e=>{ if(e.target===m) closeMessageModal(); });
+    document.body.appendChild(m);
+  }
+  const d = msgDraft, t = getTaskById(d.taskId), jo = getJO(t.joId);
+  m.style.display = 'flex';
+  m.innerHTML = `<div class="msg-box" role="dialog" aria-modal="true" aria-labelledby="msgTitle">
+    <div class="msg-hd">
+      <div><div class="msg-title" id="msgTitle">New message</div>
+        <div class="msg-ctx">${escHTML(t.name)} · ${escHTML(t.track)} · JO# ${escHTML(jo.jo)}</div></div>
+      <button class="msg-x" type="button" onclick="closeMessageModal()" aria-label="Close">×</button>
+    </div>
+    <div class="msg-fields">
+      <div class="msg-row">
+        <label class="msg-lbl" for="msgToInput">To</label>
+        <div class="msg-to" onclick="document.getElementById('msgToInput').focus()">
+          ${d.to.map(id=>`<span class="msg-chip">@${escHTML(id)}<button type="button" onclick="event.stopPropagation(); msgRemove('${id}')" aria-label="Remove ${escHTML(id)}">×</button></span>`).join('')}
+          <input id="msgToInput" autocomplete="off" placeholder="${d.to.length ? '' : 'Type @ or a name'}" value="${escAttr(d.q)}"
+                 oninput="msgTyping(this.value)" onfocus="msgFocus(true)" onblur="msgFocus(false)" onkeydown="msgKey(event)">
+        </div>
+        <div class="msg-suggest" id="msgSuggest">${msgSuggestHTML()}</div>
+      </div>
+      <div class="msg-row">
+        <label class="msg-lbl" for="msgSubject">Subject</label>
+        <input id="msgSubject" class="msg-input" maxlength="120" value="${escAttr(d.subject)}" oninput="msgDraft.subject=this.value">
+      </div>
+      <div class="msg-row">
+        <label class="msg-lbl" for="msgBody">Message</label>
+        <textarea id="msgBody" class="msg-input" rows="6" maxlength="1500" oninput="msgDraft.body=this.value">${escHTML(d.body)}</textarea>
+      </div>
+    </div>
+    <div class="msg-ft">
+      <span class="msg-hint">${d.to.length ? '' : 'Add at least one recipient.'}</span>
+      <button class="act-btn" type="button" onclick="closeMessageModal()">Cancel</button>
+      <button class="act-btn primary" type="button" id="msgSend" onclick="sendMessage()" ${d.to.length ? '' : 'disabled'}>Send</button>
+    </div>
+  </div>`;
+}
+function msgTyping(value){
+  msgDraft.q = value;
+  msgDraft.open = true;
+  document.getElementById('msgSuggest').innerHTML = msgSuggestHTML();
+}
+function msgFocus(on){
+  msgDraft.open = on;
+  const s = document.getElementById('msgSuggest');
+  if(s) s.innerHTML = msgSuggestHTML();
+}
+function msgAdd(id){
+  msgDraft.to.push(id);
+  msgDraft.q = '';
+  msgDraft.open = true;
+  renderMessageModal();
+  document.getElementById('msgToInput').focus();
+}
+function msgRemove(id){
+  msgDraft.to = msgDraft.to.filter(x=>x!==id);
+  renderMessageModal();
+  document.getElementById('msgToInput').focus();
+}
+function msgKey(e){
+  if(e.key==='Enter'){
+    e.preventDefault();
+    const first = msgCandidates()[0];
+    if(first) msgAdd(first.id);
+  } else if(e.key==='Backspace' && !msgDraft.q && msgDraft.to.length){
+    msgRemove(msgDraft.to[msgDraft.to.length-1]);
+  } else if(e.key==='Escape'){
+    closeMessageModal();
+  }
+}
+async function sendMessage(){
+  const d = msgDraft;
+  if(!d || !d.to.length) return;
+  const t = getTaskById(d.taskId);
+  if(!t || !canEditInContext(t, d.pageContext)) return;
+  const body = d.body.trim();
+  if(!body){ showToast('Write a message first'); return; }
+  const names = d.to.map(id=>getUser(id).name);
+  const subject = d.subject.trim() || '(no subject)';
+  const details = `To: ${names.join(', ')}\nSubject: ${subject}\n\n${body}`.slice(0, 2000);
+  const btn = document.getElementById('msgSend');
+  if(btn) btn.disabled = true;
+  const ok = await runLogged(`${t.id}|message|${Date.now()}`, [logEntry('Send Message', {taskId:t.id, details})], rows=>{
+    const s = supaManilaStamp(rows[0].created_at);   // the server's time, same as the activity log
+    addTaskActivity(t, {type:'message', date:s.slice(0,10), time:s.slice(11,16), text:details, user:currentUserId, logId:rows[0].activity_id});
+    saveDB();
+  });
+  if(btn) btn.disabled = false;
+  if(!ok) return;   // the draft stays open, so nothing typed is lost
+  closeMessageModal();
   renderAllScreens();
+  showToast(`✓ Message sent to ${names.join(', ')}`);
 }
 function escHTML(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s){ return escHTML(s).replace(/"/g,'&quot;'); }
 /* Log Note popup: small centered modal. Only the assigned user can save. */
 function openNoteModal(taskId, pageContext){
   const t = DB.tasks.find(x=>x.id===taskId);
@@ -681,7 +1010,7 @@ function openNoteModal(taskId, pageContext){
     m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;align-items:center;justify-content:center;z-index:1000;padding:16px;';
     m.innerHTML = `<div style="background:#fff;border-radius:10px;width:400px;max-width:100%;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.25);">
       <div style="font-weight:800;font-size:15px;margin-bottom:10px;">Log Note</div>
-      <textarea id="noteText" rows="5" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #ccc;border-radius:6px;font:inherit;"></textarea>
+      <textarea id="noteText" rows="5" maxlength="2000" style="width:100%;box-sizing:border-box;padding:8px;border:1px solid #ccc;border-radius:6px;font:inherit;"></textarea>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
         <button id="noteCancel" class="act-btn" type="button">Cancel</button>
         <button id="noteSave" class="act-btn primary" type="button">Save Note</button>
@@ -698,30 +1027,42 @@ function openNoteModal(taskId, pageContext){
   document.getElementById('noteText').focus();
 }
 function closeNoteModal(){ const m = document.getElementById('noteModal'); if(m) m.style.display = 'none'; }
-function saveNote(){
+async function saveNote(){
   const m = document.getElementById('noteModal');
   const text = document.getElementById('noteText').value.trim();
   if(!text){ showToast('Type a note first'); return; }
   const t = DB.tasks.find(x=>x.id===m.dataset.taskId);
   if(!t || !canEditInContext(t, m.dataset.ctx)) return;
-  if(!t.activity) t.activity = [];
-  const s = nowStamp();
-  t.activity.push({type:'note', date:s.date, time:s.time, text, user: currentUserId});
-  saveDB();
+  const btn = document.getElementById('noteSave');
+  btn.disabled = true;
+  const ok = await runLogged(`${t.id}|note`, [logEntry('Log Note', {taskId:t.id, details:text})], rows=>{
+    const s = supaManilaStamp(rows[0].created_at);   // the server's time, same as the activity log
+    addTaskActivity(t, {type:'note', date:s.slice(0,10), time:s.slice(11,16), text, user: currentUserId, logId:rows[0].activity_id});
+    saveDB();
+  });
+  btn.disabled = false;
+  if(!ok) return;   // the popup stays open with the text, so nothing typed is lost
   closeNoteModal();
   renderAllScreens();
   showToast('✓ Note saved');
 }
-function showToast(msg){
+function showToast(msg, ms){
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
   clearTimeout(window._toastTimer);
-  window._toastTimer = setTimeout(()=> el.classList.remove('show'), 1600);
+  window._toastTimer = setTimeout(()=> el.classList.remove('show'), ms || 1600);
 }
-function manualSave(){
+// 💾 on a task (taskId) or on a job order's checklist (joId). Only the assigned officer's
+// saves are recorded; for everyone else it saves locally as before.
+function manualSave(taskId, joId, pageContext){
   saveDB();
-  showToast('✓ Saved');
+  const t = taskId ? getTaskById(taskId) : null;
+  const canLog = t ? canEditInContext(t, pageContext) : (joId && pageContext==='s2' && !isCEO(getUser(currentUserId)));
+  if(!canLog){ showToast('✓ Saved'); return; }
+  const entry = logEntry('Save', {taskId: t ? t.id : null, joId: t ? t.joId : joId,
+    details: t ? 'Task data saved' : `Checklist saved for JO# ${(getJO(joId)||{}).jo || joId}`});
+  runLogged(`${taskId||joId}|save`, [entry]).then(ok=>{ if(ok){ refreshActivityViews(); showToast('✓ Saved'); } });
 }
 function onUserChange(uid){
   currentUserId = uid;
@@ -845,6 +1186,7 @@ async function reloadFromSource(){
     DB = seedDB();
     SOURCE_LABEL = `Built-in sample (source failed: ${e.message})`;
   }
+  await loadActivityLogs();
   lastSnapshot = null;
   saveDB();
   document.getElementById('dbTag').textContent = `${DB.tasks.length} tasks · ${DB.users.length} users · source: ${SOURCE_LABEL}`;
@@ -897,19 +1239,36 @@ function submitEditJO(joId){
   const jo = getJO(joId);
   const f = readJOForm();
   if(!f.num || !f.deploy || !f.companyId){ alert('JO number, target deploy date, and company are required.'); return; }
+  const before = {...jo};
   const deployChanged = jo.targetDeploymentDate !== f.deploy;
   jo.jo = f.num; jo.companyId = f.companyId; jo.targetDeploymentDate = f.deploy; jo.workCategory = f.workCategory; jo.programType = f.programType;
+  const dueChanges = [];
   if(deployChanged){
     const deployDate = new Date(f.deploy+'T00:00:00');
     tasksForJO(joId).forEach(t=>{
       const cfg = TASKS_CONFIG[t.track].find(c=>c.name===t.name);
+      const oldDue = t.due;
       t.due = isoStr(addDays(deployDate, cfg.offset));
+      if(t.due!==oldDue) dueChanges.push([t, oldDue]);
     });
   }
   saveDB();
   s2Form = null;
   renderAllScreens();
   showToast('✓ Saved');
+
+  // Record the update: one row for the job order, one per task whose due date moved.
+  const changes = [];
+  if(before.jo!==jo.jo) changes.push(`JO number ${before.jo} → ${jo.jo}`);
+  if(before.companyId!==jo.companyId) changes.push(`Company ${(getCompany(before.companyId)||{}).name} → ${getCompany(jo.companyId).name}`);
+  if(deployChanged) changes.push(`Target deploy ${fmtFullDate(before.targetDeploymentDate)} → ${fmtFullDate(jo.targetDeploymentDate)}`);
+  if(before.workCategory!==jo.workCategory) changes.push(`Work category ${before.workCategory||'—'} → ${jo.workCategory}`);
+  if(before.programType!==jo.programType) changes.push(`Program type ${before.programType||'—'} → ${jo.programType}`);
+  if(!changes.length) return;
+  const entries = [logEntry('Task Update', {joId, details:`JO# ${jo.jo} updated: ${changes.join('; ')}`})]
+    .concat(dueChanges.map(([t, oldDue])=> logEntry('Task Update', {taskId:t.id,
+      details:`Due date ${fmtFullDate(oldDue)} → ${fmtFullDate(t.due)} (target deploy changed)`})));
+  runLogged(`${joId}|edit`, entries).then(ok=>{ if(ok) refreshActivityViews(); });
 }
 function archiveJO(joId){
   if(!canManageJOs()) return;
@@ -967,6 +1326,7 @@ function selectS3Track(k){ s3Track=k; s3JO=firstJOForTrack(k); renderAllScreens(
 function selectS3JO(id){ s3JO=id; renderAllScreens(); }
 function openDueGatesTaskDetail(taskId, pageContext){
   if(pageContext==='s2') s2Detail=taskId; else s3Detail=taskId;
+  ensureTaskLogs(taskId);
   renderAllScreens();
 }
 function closeS2Detail(){ s2Detail=null; renderAllScreens(); }
@@ -990,7 +1350,7 @@ function onSearchInput(val, which){
   const el = document.getElementById('search-'+which);
   if(el){ el.focus(); const v=el.value; el.setSelectionRange(v.length, v.length); }
 }
-function openTaskDetail(taskId){ s1Detail=taskId; renderAllScreens(); }
+function openTaskDetail(taskId){ s1Detail=taskId; ensureTaskLogs(taskId); renderAllScreens(); }
 function closeTaskDetail(){ s1Detail=null; renderAllScreens(); }
 function openDetailFor(taskId, pageContext){
   if(pageContext==='s1') openTaskDetail(taskId);
@@ -1002,6 +1362,8 @@ function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   renderAllScreens();
+  // Configuration reloads the history, so actions sent since the last load appear without a refresh.
+  if(id==='s5') loadActivityLogs().then(()=>{ if(document.getElementById('s5').classList.contains('active')) renderAllScreens(); });
 }
 function showScreenById(id){ showScreen(id); }
 
@@ -1137,7 +1499,6 @@ function buildJODetail(joId, highlightTaskId, backFn, backLabel, pageContext, pa
   }).join('');
 
   const actionTarget = current || tasks[0];
-  const taskActivity = (actionTarget.activity||[]).slice().sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
 
   return `<div class="detail-top"><span class="back-link" onclick="${backFn}">${backLabel}</span>${pagerHTML||''}</div>
   <div class="body-row">
@@ -1158,25 +1519,18 @@ function buildJODetail(joId, highlightTaskId, backFn, backLabel, pageContext, pa
         ${actionButtonHTML('note','📝','Log Note', actionTarget, pageContext)}
         ${actionButtonHTML('upload','📎','Upload', actionTarget, pageContext)}
         ${markDoneButtonHTML(actionTarget, pageContext)}
-        <button class="save-btn" onclick="manualSave()" title="Save manually">💾</button>
+        <button class="save-btn" onclick="manualSave('${actionTarget.id}',null,'${pageContext}')" title="Save manually">💾</button>
       </div>
       <div class="card">
         <div class="card-hd"><span class="t">Notes</span></div>
-        ${taskActivity.filter(a=>a.type==='note' && a.text).length ? taskActivity.filter(a=>a.type==='note' && a.text).map(a=>`<div class="done-row"><div class="ci-body"><div style="font-size:13px;">${escHTML(a.text)}</div><div class="ci-badges"><span class="badge-followup">${escHTML((getUser(a.user)||{}).name || a.user || '')} · ${fmtStamp(a)}</span></div></div></div>`).join('') : '<div class="empty-note">No notes logged for this task yet.</div>'}
-      </div>
-      <div class="card">
-        <div class="card-hd"><span class="t">Recent Actions</span></div>
-        ${taskActivity.length ? taskActivity.map(a=>{
-          const meta = ACTION_META[a.type];
-          return `<div class="done-row"><span class="ck" style="color:var(--ink-soft);">${meta.icon}</span><div class="ci-body"><div class="jnt-title" style="font-weight:700;">${meta.label}</div>${a.text ? `<div style="font-size:12.5px;margin-top:2px;">${escHTML(a.text)}</div>` : ''}<div class="ci-badges"><span class="badge-followup">${fmtStamp(a)}</span></div></div></div>`;
-        }).join('') : '<div class="empty-note">No actions logged for this task yet.</div>'}
+        <div data-notes-task="${actionTarget.id}">${notesHTML(actionTarget)}</div>
       </div>
     </div>
     <div class="side-col">
       <div class="gate-ring-wrap">
         <div class="gate-ring" style="background:conic-gradient(var(--blue) 0% ${pct}%, #E5E7EB ${pct}% 100%)"><div class="hole">${doneCount}/${total}</div></div>
         <div><div style="font-size:11.5px;font-weight:800;color:var(--ink-soft);letter-spacing:.05em;">TO DO</div><div style="font-size:13px;font-weight:700;">Job Order Gates</div></div>
-        <button class="save-btn" onclick="manualSave()" title="Save manually">💾</button>
+        <button class="save-btn" onclick="manualSave('${actionTarget.id}',null,'${pageContext}')" title="Save manually">💾</button>
       </div>
       <div class="gate-list-scroll">${gateRows}</div>
     </div>
@@ -1184,12 +1538,68 @@ function buildJODetail(joId, highlightTaskId, backFn, backLabel, pageContext, pa
   `;
 }
 
+function notesHTML(task){
+  const notes = (task.activity||[]).filter(a=>a.type==='note' && a.text).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+  return notes.length ? notes.map(a=>`<div class="note-row">
+      <div class="note-text">${escHTML(a.text)}</div>
+      <div class="note-meta"><span class="note-tag">Log Note</span><span>${escHTML((getUser(a.user)||{}).name || a.user || '')}</span><span>${fmtStamp(a)}</span></div>
+    </div>`).join('')
+    : '<div class="empty-note">No notes logged for this task yet.</div>';
+}
+
+/* Recent Actions: activity_logs rows for one task, newest first. */
+const byNewest = (a,b)=> new Date(b.created_at) - new Date(a.created_at) || (b.activity_id||0) - (a.activity_id||0);
+function fmtActivityTime(iso){
+  const d = new Date(iso);
+  const date = d.toLocaleDateString('en-US', {timeZone:'Asia/Manila', month:'short', day:'numeric', year:'numeric'});
+  const time = d.toLocaleTimeString('en-US', {timeZone:'Asia/Manila', hour:'numeric', minute:'2-digit'});
+  return `${date} – ${time}`;
+}
+function taskActivityItems(task){
+  const logged = (ACTIVITY_LOGS||[]).filter(r=>r.task_id===task.id);
+  // Activity imported from the Google Sheets (table activity) predates activity_logs; keep showing it.
+  const imported = (task.activity||[]).filter(a=>!a.logId && LOG_TYPE_FOR[a.type]).map(a=>({
+    action_type: LOG_TYPE_FOR[a.type], created_at: `${a.date}T${a.time||'00:00'}:00+08:00`,
+    user_name: a.user ? (getUser(a.user)||{}).name : '', action_details: a.text || a.fileName || '', imported: true}));
+  return logged.concat(imported).sort(byNewest);
+}
+function activityItemHTML(r){
+  const m = LOG_TYPES[r.action_type] || {icon:'•', kind:'update', title:()=>r.action_type};
+  const detail = r.action_type==='Upload' ? '' : (r.action_details || '');
+  const status = r.updated_status
+    ? `<span class="ra-status">${r.previous_status ? escHTML(r.previous_status)+' → ' : ''}${escHTML(r.updated_status)}</span>` : '';
+  return `<div class="ra-item">
+    <span class="ra-ico k-${m.kind}">${m.icon}</span>
+    <div class="ra-body">
+      <div class="ra-type">${escHTML(m.title(r))}</div>
+      ${detail ? `<div class="ra-detail" title="${escAttr(detail)}">${escHTML(detail)}</div>` : ''}
+      <div class="ra-meta">By: ${escHTML(r.user_name || (r.imported ? 'Imported from sheet' : 'Unknown'))}</div>
+      <div class="ra-meta"><span>${fmtActivityTime(r.created_at)}</span>${status}</div>
+    </div>
+  </div>`;
+}
+function recentActionsHTML(task){
+  const warn = ACTIVITY_LOGS===null
+    ? '<div class="ra-warn">Activity log not reachable, so new actions cannot be recorded. Run supabase/06_activity_logs.sql, then reload.</div>' : '';
+  const items = taskActivityItems(task);
+  return warn + (items.length ? items.map(activityItemHTML).join('') : '<div class="empty-note">No actions logged for this task yet.</div>');
+}
+// Redraws only the activity parts of the page, so a live update never wipes a form being typed in.
+function refreshActivityViews(){
+  document.querySelectorAll('[data-ra-task]').forEach(el=>{ const t = getTaskById(el.dataset.raTask); if(t) el.innerHTML = recentActionsHTML(t); });
+  document.querySelectorAll('[data-ra-count]').forEach(el=>{ const t = getTaskById(el.dataset.raCount); if(t) el.textContent = taskActivityItems(t).length || ''; });
+  document.querySelectorAll('[data-notes-task]').forEach(el=>{ const t = getTaskById(el.dataset.notesTask); if(t) el.innerHTML = notesHTML(t); });
+  updateEventLogTable();
+}
+
 function actionButtonHTML(type, icon, label, task, pageContext){
   const editable = canEditInContext(task, pageContext);
   if(!editable) return `<button class="act-btn locked" disabled><span class="ico">🔒</span>${label}</button>`;
   // Follow Up stays clickable every time, so each click can add another follow-up.
-  if(type!=='followup' && loggedToday(task, type)) return `<button class="act-btn logged-today" disabled><span class="ico">✓</span>${label} logged</button>`;
+  if(type!=='followup' && type!=='message' && loggedToday(task, type)) return `<button class="act-btn logged-today" disabled><span class="ico">✓</span>${label} logged</button>`;
   if(type==='note') return `<button class="act-btn" onclick="openNoteModal('${task.id}','${pageContext}')"><span class="ico">${icon}</span>${label}</button>`;
+  if(type==='message') return `<button class="act-btn" onclick="openMessageModal('${task.id}','${pageContext}')"><span class="ico">${icon}</span>${label}</button>`;
+  if(type==='upload') return `<button class="act-btn" onclick="pickUpload('${task.id}','${pageContext}')"><span class="ico">${icon}</span>${label}</button>`;
   return `<button class="act-btn" onclick="logActivity('${task.id}','${type}','${pageContext}')"><span class="ico">${icon}</span>${label}</button>`;
 }
 function markDoneButtonHTML(task, pageContext){
@@ -1457,7 +1867,7 @@ function buildDueGatesScreen(scope){
           <div class="gate-ring" style="width:40px;height:40px;background:conic-gradient(var(--blue) 0% ${pct}%, #E5E7EB ${pct}% 100%)"><div class="hole" style="width:28px;height:28px;font-size:10px;">${doneCount}/${total}</div></div>
           <div style="font-size:11px;font-weight:800;color:var(--ink-soft);">TO DO</div>
         </div>
-        ${isMine ? `<button class="save-btn" onclick="manualSave()" title="Save manually">💾</button>` : ''}
+        ${isMine ? `<button class="save-btn" onclick="manualSave(null,'${selJOId}','s2')" title="Save manually">💾</button>` : ''}
       </div><div class="tri-body">${items}</div>`;
     bottomBar = `<div class="bottom-bar">✓ ${doneCount} of ${total} ${trackKey} items cleared for JO# ${jo.jo} ${!isMine?'<span class="dim">· read-only view</span>':''}</div>`;
   }
@@ -1557,6 +1967,7 @@ function renderAllScreens(){
   document.getElementById('s4-frame').innerHTML = buildScreen4();
   document.getElementById('s5-frame').innerHTML = buildConfigScreen();
   updateConfigTable();
+  updateEventLogTable();
   if(s4Company){
     setTimeout(()=>{
       const el = document.querySelector('#s4-frame .col-jolist');
@@ -1595,13 +2006,86 @@ function filteredEvents(){
 }
 function cfgSet(key, value){ cfgFilter[key] = value; updateConfigTable(); }
 function cfgClear(){ Object.keys(cfgFilter).forEach(k=>cfgFilter[k]=''); renderAllScreens(); }
+/* Configuration has two pages: Event Logs (activity_logs, user actions on tasks) and Sync Logs. */
+let cfgTab = 'events';
+const evFilter = {q:'', type:''};
+function cfgShowTab(tab){ cfgTab = tab; renderAllScreens(); }
 function buildConfigScreen(){
-  const head = navHTML('Configuration');
-  if(EVENT_LOGS===null) return head + `<div class="cfg-wrap"><div class="empty-note">Sync logs are only available when Kiroku loads from Supabase. Reload after the sync has run.</div></div>`;
+  const tabs = `<div class="cfg-tabs">
+    <button class="cfg-tab ${cfgTab==='events'?'on':''}" onclick="cfgShowTab('events')">Event Logs</button>
+    <button class="cfg-tab ${cfgTab==='sync'?'on':''}" onclick="cfgShowTab('sync')">Sync Logs</button>
+  </div>`;
+  return navHTML('Configuration') + `<div class="cfg-wrap">${tabs}${cfgTab==='events' ? buildEventLogsHTML() : buildSyncLogsHTML()}</div>`;
+}
+// The CEO sees every job order's history; a Doc Officer sees the job orders they can open.
+function visibleLogRows(){
+  if(!ACTIVITY_LOGS) return [];
+  if(isCEO(getUser(currentUserId))) return ACTIVITY_LOGS.slice();
+  const mine = new Set(visibleJOs().map(j=>j.id));
+  return ACTIVITY_LOGS.filter(r=>mine.has(r.jo_id));
+}
+function evSet(key, value){ evFilter[key] = value; updateEventLogTable(); }
+function evClear(){ evFilter.q = ''; evFilter.type = ''; renderAllScreens(); }
+function buildEventLogsHTML(){
+  if(ACTIVITY_LOGS===null) return `<div class="empty-note">Event logs are not available: the activity_logs table could not be read. Run supabase/06_activity_logs.sql in Supabase, then reload.</div>`;
+  const typeOpts = '<option value="">All actions</option>' + Object.keys(LOG_TYPES)
+    .map(v=>`<option value="${escAttr(v)}" ${v===evFilter.type?'selected':''}>${escHTML(v)}</option>`).join('');
+  return `<div class="cfg-hd">
+      <div><div class="cfg-title">Event Logs</div><div class="cfg-sub">Every action taken on a task: follow-ups, messages, notes, uploads, status changes, updates and saves. Newest first. Times are Philippine time.</div></div>
+      <div class="cfg-count" id="evCount"></div>
+    </div>
+    <div class="cfg-filters">
+      <input class="cfg-input cfg-search" placeholder="Search task, JO #, user or details" value="${escAttr(evFilter.q)}" oninput="evSet('q', this.value)">
+      <select class="cfg-input" onchange="evSet('type', this.value)">${typeOpts}</select>
+      <button class="cfg-clear" onclick="evClear()">Clear filters</button>
+    </div>
+    <div class="cfg-table-wrap">
+      <table class="cfg-table ev-table">
+        <thead><tr><th>Date &amp; time</th><th>User</th><th>Action</th><th>Task</th><th>Details</th><th>Status</th></tr></thead>
+        <tbody id="evBody"></tbody>
+      </table>
+    </div>`;
+}
+function logTaskLabel(r){
+  const t = r.task_id ? getTaskById(r.task_id) : null, jo = getJO(r.jo_id);
+  return {task: t ? `${t.name} · ${t.track}` : (r.task_id || 'Job order'), jo: jo ? `JO# ${jo.jo}` : r.jo_id};
+}
+function updateEventLogTable(){
+  const body = document.getElementById('evBody');
+  if(!body || ACTIVITY_LOGS===null) return;
+  const all = visibleLogRows().sort(byNewest);
+  const q = evFilter.q.trim().toLowerCase();
+  const rows = all.filter(r=>{
+    if(evFilter.type && r.action_type!==evFilter.type) return false;
+    if(q){
+      const l = logTaskLabel(r);
+      const hay = [r.user_name, r.action_type, (LOG_TYPES[r.action_type]||{title:()=>''}).title(r), r.action_details, l.task, l.jo, r.task_id].join(' ').toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  document.getElementById('evCount').textContent = `${rows.length} of ${all.length} shown${logsComplete ? '' : ` · latest ${LOG_PAGE} loaded`}`;
+  body.innerHTML = rows.length ? rows.map(r=>{
+    const m = LOG_TYPES[r.action_type] || {icon:'•', title:()=>r.action_type};
+    const l = logTaskLabel(r);
+    const detail = r.action_type==='Upload' ? '' : (r.action_details || '');
+    const status = r.updated_status ? `<span class="ra-status">${r.previous_status ? escHTML(r.previous_status)+' → ' : ''}${escHTML(r.updated_status)}</span>` : '';
+    return `<tr>
+      <td class="cfg-time">${fmtActivityTime(r.created_at)}</td>
+      <td>${escHTML(r.user_name)}</td>
+      <td style="white-space:nowrap;">${m.icon} ${escHTML(m.title(r))}</td>
+      <td>${escHTML(l.task)}<div class="cfg-rec">${escHTML(l.jo)}</div></td>
+      <td class="ev-det">${escHTML(detail)}</td>
+      <td>${status}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="6" class="empty-note">${all.length ? 'No events match these filters.' : 'No events yet. Actions taken on tasks appear here.'}</td></tr>`;
+}
+function buildSyncLogsHTML(){
+  if(EVENT_LOGS===null) return `<div class="empty-note">Sync logs are only available when Kiroku loads from Supabase. Reload after the sync has run.</div>`;
   const opts = (arr, cur, all) => `<option value="">${all}</option>` + arr.map(v=>`<option value="${escHTML(v)}" ${v===cur?'selected':''}>${escHTML(v)}</option>`).join('');
   const actions = [...new Set(EVENT_LOGS.map(e=>e.action))].sort();
   const f = cfgFilter;
-  return head + `<div class="cfg-wrap">
+  return `
     <div class="cfg-hd">
       <div><div class="cfg-title">Sync Logs</div><div class="cfg-sub">Google Sheets to Supabase sync: records created and changed, newest first. Times are Philippine time.</div></div>
       <div class="cfg-count" id="cfgCount"></div>
@@ -1618,8 +2102,7 @@ function buildConfigScreen(){
         <thead><tr><th>Date &amp; time</th><th>User</th><th>Source</th><th>Module</th><th>Action</th><th>Description</th><th>Status</th></tr></thead>
         <tbody id="cfgBody"></tbody>
       </table>
-    </div>
-  </div>`;
+    </div>`;
 }
 function updateConfigTable(){
   const body = document.getElementById('cfgBody');
@@ -1654,6 +2137,8 @@ function populateUserSwitch(){
   populateUserSwitch();
   document.getElementById('s1').classList.add('active');
   renderAllScreens();
+  startActivityRealtime();
+  window.addEventListener('load', startActivityRealtime);   // in case supabase-js loads after init
 })();
 </script>
 </body>
