@@ -85,3 +85,23 @@ Re-running a sync never duplicates rows: each row is matched by its key
 Every new row and every changed field is recorded in `event_log`, and each run in `sync_runs`.
 
 Never put the service_role key in `index.html` or any file in the GitHub repo.
+
+---
+
+## V4: activity log (Recent Actions + Configuration > Event Logs)
+
+File: `06_activity_logs.sql`. Run it once in the SQL Editor, after `01_schema.sql`.
+
+It creates `activity_logs`: one permanent row per action on a task (Follow Up, Send Message,
+Log Note, Upload, Mark Done, Status Change, Task Update, Save). The page writes only through
+`log_task_activity()`, which:
+
+- stamps the server time (not the browser clock)
+- reads the user's name from `users` (and, once logins exist, uses the signed-in user instead of the dropdown)
+- takes the job order from the task, so a row always points at the right job order
+- returns the existing row when the same click is sent twice
+
+Rows cannot be updated, deleted or truncated, not even with the service_role key (a trigger blocks it).
+The script also adds the table to Supabase Realtime so open pages show new actions without a refresh.
+
+Until this script is run, the task page shows "Activity log not reachable" and actions are not recorded.
