@@ -72,6 +72,23 @@ body{background:var(--bg); font-family:var(--font-body); color:var(--ink); paddi
 .ball-md{width:16px; height:16px; margin-top:0;}
 .active-ring{box-shadow:0 0 0 3px var(--gold);}
 .follow-ring{box-shadow:0 0 0 2px #fff, 0 0 0 4px #E0B93A !important;}
+
+/* Notification bell in the nav */
+.notif-wrap{position:relative; display:inline-flex; margin-right:8px;}
+.bell{position:relative; background:none; border:none; color:#fff; font-size:15px; line-height:1; padding:4px 6px; cursor:pointer;}
+.bell:hover{color:var(--gold);}
+.bell-count{position:absolute; top:-3px; right:-4px; min-width:16px; height:16px; padding:0 4px; border-radius:8px; background:var(--darkred); color:#fff; font-size:10px; font-weight:800; line-height:16px; text-align:center;}
+.notif-pop{display:none; position:absolute; right:0; top:32px; width:340px; max-height:380px; overflow-y:auto; overscroll-behavior:contain; background:#fff; color:var(--ink); border:1px solid var(--border); box-shadow:0 6px 18px rgba(0,0,0,.14); z-index:60; text-align:left;}
+.notif-pop.open{display:block;}
+.notif-hd{padding:9px 12px; font-size:11.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft); border-bottom:1px solid var(--border); background:#FAFAFB;}
+.notif-item{display:flex; flex-direction:column; gap:2px; width:100%; text-align:left; border:none; border-bottom:1px solid #F1F3F4; background:#fff; padding:9px 12px; cursor:pointer; font-family:var(--font-body);}
+.notif-item:hover{background:var(--gold-light);}
+.notif-kind{font-size:10.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--blue);}
+.notif-kind.overdue{color:var(--darkred);}
+.notif-new{background:var(--darkred); color:#fff; border-radius:2px; padding:0 4px; margin-left:4px;}
+.notif-main{font-size:13px; font-weight:700; color:var(--ink);}
+.notif-sub{font-size:11.5px; color:var(--ink-soft);}
+.notif-empty{padding:14px 12px; font-size:12.5px; color:var(--ink-soft); font-style:italic;}
 .queue-item .qbody{flex:1;}
 .queue-item .qn{font-size:13.5px; font-weight:700;}
 .queue-item .qs{font-size:12px; color:var(--ink-soft); margin-top:1px;}
@@ -1375,6 +1392,81 @@ function openDetailFor(taskId, pageContext){
 }
 
 /* ---------- nav ---------- */
+/* ---------- Notifications (bell in the nav): messages sent to you, and your overdue tasks ---------- */
+function recipientNames(r){
+  const first = String(r.action_details||'').split('\n')[0];
+  return first.startsWith('To: ') ? first.slice(4).split(', ').map(s=>s.trim()) : [];
+}
+function notifItems(){
+  const myName = (getUser(currentUserId)||{}).name;
+  const msgs = (ACTIVITY_LOGS||[])
+    .filter(r=>r.action_type==='Send Message' && r.user_id!==currentUserId && recipientNames(r).includes(myName))
+    .sort(byNewest);
+  const overdue = tasksForUser(currentUserId).filter(t=>!t.done && diffDays(t.due)<0)
+    .sort((a,b)=>diffDays(a.due)-diffDays(b.due));
+  return {msgs, overdue};
+}
+function notifSeen(){
+  try { return Number(localStorage.getItem('kiroku_notif_seen_'+currentUserId) || 0); } catch(e){ return 0; }
+}
+function markNotifSeen(){
+  try { localStorage.setItem('kiroku_notif_seen_'+currentUserId, String(Date.now())); } catch(e){}
+}
+function notifHTML(){
+  const {msgs, overdue} = notifItems();
+  const seen = notifSeen();
+  const fresh = msgs.filter(r=>new Date(r.created_at).getTime() > seen).length;
+  const count = fresh + overdue.length;
+  return `<span class="notif-wrap">
+    <button class="bell" type="button" onclick="toggleNotif(this)" aria-label="Notifications, ${count} new" title="Notifications">🔔${count ? `<span class="bell-count">${count}</span>` : ''}</button>
+    <div class="notif-pop">${notifListHTML(msgs, overdue, seen)}</div>
+  </span>`;
+}
+function notifListHTML(msgs, overdue, seen){
+  const msgRows = msgs.map(r=>{
+    const subject = (String(r.action_details||'').split('\n')[1] || '').replace(/^Subject: /,'');
+    const isNew = new Date(r.created_at).getTime() > seen;
+    return `<button type="button" class="notif-item" onclick="openNotif('${r.task_id}')">
+      <span class="notif-kind">Message${isNew ? ' <span class="notif-new">new</span>' : ''}</span>
+      <span class="notif-main">${escHTML(r.user_name)} · ${escHTML(subject || '(no subject)')}</span>
+      <span class="notif-sub">${escHTML(getTaskById(r.task_id)?.name || '')} · ${fmtActivityTime(r.created_at)}</span>
+    </button>`;
+  }).join('');
+  const overdueRows = overdue.map(t=>`<button type="button" class="notif-item" onclick="openNotif('${t.id}')">
+      <span class="notif-kind overdue">Overdue</span>
+      <span class="notif-main">${escHTML(t.name)} · ${escHTML(t.track)}</span>
+      <span class="notif-sub">JO# ${escHTML(getJO(t.joId).jo)} · ${Math.abs(diffDays(t.due))} days late</span>
+    </button>`).join('');
+  const body = msgRows + overdueRows;
+  return `<div class="notif-hd">Notifications</div>${body || '<div class="notif-empty">Nothing new.</div>'}`;
+}
+function toggleNotif(btn){
+  const pop = btn.closest('.notif-wrap').querySelector('.notif-pop');
+  const opening = !pop.classList.contains('open');
+  closeNotifs();
+  if(!opening) return;
+  pop.classList.add('open');
+  markNotifSeen();
+  const {overdue} = notifItems();
+  // the badge shows only what is still open (overdue tasks) once the list is opened
+  document.querySelectorAll('.bell').forEach(b=>{
+    const n = overdue.length;
+    b.innerHTML = '🔔' + (n ? `<span class="bell-count">${n}</span>` : '');
+  });
+}
+function closeNotifs(){ document.querySelectorAll('.notif-pop.open').forEach(p=>p.classList.remove('open')); }
+function openNotif(taskId){
+  closeNotifs();
+  const t = getTaskById(taskId);
+  if(!t) return;
+  if(tasksForUser(currentUserId).some(x=>x.id===taskId)){
+    showScreen('s1'); openTaskDetail(taskId);
+  } else {
+    showScreen('s3'); openDueGatesTaskDetail(taskId, 's3');
+  }
+}
+document.addEventListener('click', e=>{ if(!e.target.closest('.notif-wrap')) closeNotifs(); });
+
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
@@ -1391,7 +1483,8 @@ function navHTML(activeTab){
     <span class="brand">☰ Kiroku · Completeness Gate</span>
     ${tabs.map(t=> `<span class="tab ${t.label===activeTab?'on':''}" onclick="showScreenById('${t.id}')">${t.label}</span>`).join('')}
     <span class="spacer"></span>
-    <span class="who">🔔 ${user.name} (${user.role})</span>
+    ${notifHTML()}
+    <span class="who">${user.name} (${user.role})</span>
     ${isCEO(user) ? '<span class="readonly-pill">View only</span>' : ''}
   </div>`;
 }
