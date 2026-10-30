@@ -263,6 +263,9 @@ textarea.msg-input{resize:vertical; min-height:120px;}
 .msg-ft{display:flex; align-items:center; gap:8px; justify-content:flex-end; padding:10px 16px; border-top:1px solid var(--border);}
 .msg-hint{margin-right:auto; font-size:12px; color:var(--ink-soft);}
 .msg-ft .act-btn:disabled{opacity:.45; cursor:not-allowed;}
+.msg-meta-row{display:grid; grid-template-columns:56px 1fr; gap:8px; font-size:13px; margin-bottom:6px;}
+.msg-meta-row .m-lbl{font-size:10.5px; font-weight:800; letter-spacing:.05em; color:var(--ink-soft); text-transform:uppercase; padding-top:2px;}
+.msg-full{margin-top:10px; padding:12px 14px; border:1px solid var(--border); background:#FAFAFB; border-radius:3px; font-size:14px; line-height:1.55; white-space:pre-wrap; overflow-wrap:anywhere; max-height:50vh; overflow-y:auto;}
 
 .card-hd .n{font-size:11px; font-weight:800; color:var(--ink-soft);}
 .ra-list{max-height:320px; overflow-y:auto; overscroll-behavior:contain;}
@@ -1196,7 +1199,7 @@ async function loadFromSupabase(){
   if(entries.some(([,objs])=>objs.length===0)) return null;   // not synced yet: use the Sheet / CSV
   const db = buildDBFromTabs(Object.fromEntries(entries.map(([tab, objs])=>[tab, supaToRows(tab, objs)])));
   SOURCE_LABEL = 'Supabase (kiroku)';
-  EVENT_LOGS = await fetchEventLogs().catch(e=>{ console.warn('sync_logs load failed:', e); return null; });
+  EVENT_LOGS = await fetchEventLogs().catch(e=>{ console.warn('event_logs load failed:', e); return null; });
   return db;
 }
 async function loadFromSource(){
@@ -1433,7 +1436,7 @@ function notifListHTML(msgs, overdue, seen){
   const msgRows = msgs.map(r=>{
     const subject = (String(r.action_details||'').split('\n')[1] || '').replace(/^Subject: /,'');
     const isNew = new Date(r.created_at).getTime() > seen;
-    return `<button type="button" class="notif-item" onclick="openNotif('${r.task_id}')">
+    return `<button type="button" class="notif-item" onclick="openMessageView(${r.activity_id})">
       <span class="notif-kind">Message${isNew ? ' <span class="notif-new">new</span>' : ''}</span>
       <span class="notif-main">${escHTML(r.user_name)} · ${escHTML(subject || '(no subject)')}</span>
       <span class="notif-sub">${escHTML(getTaskById(r.task_id)?.name || '')} · ${fmtActivityTime(r.created_at)}</span>
@@ -1462,6 +1465,43 @@ function toggleNotif(btn){
   });
 }
 function closeNotifs(){ document.querySelectorAll('.notif-pop.open').forEach(p=>p.classList.remove('open')); }
+// Full view of one message from the bell list.
+function openMessageView(activityId){
+  closeNotifs();
+  const r = (ACTIVITY_LOGS||[]).find(x=>String(x.activity_id)===String(activityId));
+  if(!r) return;
+  const lines = String(r.action_details||'').split('\n');
+  const to = (lines[0]||'').replace(/^To: /,'');
+  const subject = (lines[1]||'').replace(/^Subject: /,'') || '(no subject)';
+  const body = lines.slice(3).join('\n');
+  const t = r.task_id && getTaskById(r.task_id);
+  let m = document.getElementById('msgViewModal');
+  if(!m){
+    m = document.createElement('div');
+    m.id = 'msgViewModal';
+    m.className = 'msg-ov';
+    m.addEventListener('click', e=>{ if(e.target===m) m.style.display = 'none'; });
+    document.body.appendChild(m);
+  }
+  const ctx = t ? `${escHTML(t.name)} · ${escHTML(t.track)} · JO# ${escHTML(getJO(t.joId).jo)}` : 'Job order message';
+  m.style.display = 'flex';
+  m.innerHTML = `<div class="msg-box" role="dialog" aria-modal="true" aria-labelledby="msgViewTitle">
+    <div class="msg-hd">
+      <div><div class="msg-title" id="msgViewTitle">${escHTML(subject)}</div><div class="msg-ctx">${ctx}</div></div>
+      <button class="msg-x" type="button" onclick="document.getElementById('msgViewModal').style.display='none'" aria-label="Close">×</button>
+    </div>
+    <div class="msg-fields">
+      <div class="msg-meta-row"><span class="m-lbl">From</span><span>${escHTML(r.user_name)}</span></div>
+      <div class="msg-meta-row"><span class="m-lbl">To</span><span>${escHTML(to)}</span></div>
+      <div class="msg-meta-row"><span class="m-lbl">Sent</span><span>${fmtActivityTime(r.created_at)}</span></div>
+      <div class="msg-full">${escHTML(body)}</div>
+    </div>
+    <div class="msg-ft">
+      ${t ? `<button class="act-btn" type="button" onclick="document.getElementById('msgViewModal').style.display='none'; openNotif('${t.id}')">Open task</button>` : ''}
+      <button class="act-btn primary" type="button" onclick="document.getElementById('msgViewModal').style.display='none'">Close</button>
+    </div>
+  </div>`;
+}
 function openNotif(taskId){
   closeNotifs();
   const t = getTaskById(taskId);
@@ -2127,14 +2167,14 @@ function renderAllScreens(){
   document.getElementById('dbTag').textContent = `${DB.tasks.length} tasks · ${DB.users.length} users · source: ${SOURCE_LABEL}`;
 }
 
-/* ---------- Configuration: sync logs (table sync_logs) ---------- */
+/* ---------- Configuration: event logs (table event_logs) ---------- */
 let EVENT_LOGS = null;               // null = not loaded from Supabase (sheet / CSV mode)
 const cfgFilter = {q:'', module:'', action:'', status:''};
 
 async function fetchEventLogs(){
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/sync_logs?select=*&order=event_at.desc&limit=500`, {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/event_logs?select=*&order=event_at.desc&limit=500`, {
     headers:{apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`}, cache:'no-store'});
-  if(!res.ok) throw new Error(`sync_logs: HTTP ${res.status}`);
+  if(!res.ok) throw new Error(`event_logs: HTTP ${res.status}`);
   return res.json();
 }
 function fmtManila(iso){
@@ -2231,7 +2271,7 @@ function updateEventLogTable(){
   }).join('') : `<tr><td colspan="6" class="empty-note">${all.length ? 'No events match these filters.' : 'No events yet. Actions taken on tasks appear here.'}</td></tr>`;
 }
 function buildSyncLogsHTML(){
-  if(EVENT_LOGS===null) return `<div class="empty-note">Sync logs are only available when Kiroku loads from Supabase. Reload after the sync has run.</div>`;
+  if(EVENT_LOGS===null) return `<div class="empty-note">Event logs are only available when Kiroku loads from Supabase. Reload after the sync has run.</div>`;
   const opts = (arr, cur, all) => `<option value="">${all}</option>` + arr.map(v=>`<option value="${escHTML(v)}" ${v===cur?'selected':''}>${escHTML(v)}</option>`).join('');
   const actions = [...new Set(EVENT_LOGS.map(e=>e.action))].sort();
   const f = cfgFilter;
